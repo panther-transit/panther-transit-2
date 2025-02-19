@@ -1,12 +1,37 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { api } from '../utils/api';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const validateForm = () => {
+    if (!email.endsWith('@student.gsu.edu')) {
+      throw new Error('Please use your GSU student email');
+    }
+
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+
+    if (!/\d/.test(password)) {
+      throw new Error('Password must contain at least one number');
+    }
+
+    if (!/[!@#$%^&*]/.test(password)) {
+      throw new Error('Password must contain at least one special character');
+    }
+
+    if (password !== confirmPassword) {
+      throw new Error('Passwords do not match');
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -66,14 +91,40 @@ export default function SignupScreen() {
             />
           </View>
 
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+
           <Pressable 
             style={({pressed}) => [
               styles.signupButton,
-              pressed && styles.buttonPressed
+              pressed && styles.buttonPressed,
+              loading && styles.buttonDisabled
             ]}
-            onPress={() => console.log('Signup pressed')}
+            onPress={async () => {
+              try {
+                setError('');
+                validateForm();
+                setLoading(true);
+                
+                const { token, user } = await api.auth.signup(email, password);
+                
+                // TODO: Store token and user data
+                console.log('Signup successful:', { token, user });
+                
+                // Navigate to main app
+                router.replace('/(app)/home');
+              } catch (err: any) {
+                setError(err.message);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
           >
-            <Text style={styles.signupButtonText}>Create Account</Text>
+            <Text style={styles.signupButtonText}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Text>
           </Pressable>
 
           <Text style={styles.termsText}>
@@ -86,6 +137,16 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
+  errorText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontFamily: 'Montserrat-SemiBold',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',

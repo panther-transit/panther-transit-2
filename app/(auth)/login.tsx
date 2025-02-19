@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { api } from '../utils/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   return (
     <KeyboardAvoidingView 
@@ -52,14 +55,39 @@ export default function LoginScreen() {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </Pressable>
 
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+
           <Pressable 
             style={({pressed}) => [
               styles.loginButton,
-              pressed && styles.buttonPressed
+              pressed && styles.buttonPressed,
+              loading && styles.buttonDisabled
             ]}
-            onPress={() => console.log('Login pressed')}
+            onPress={async () => {
+              try {
+                setError('');
+                setLoading(true);
+                
+                const { token, user } = await api.auth.login(email, password);
+                
+                // TODO: Store token and user data
+                console.log('Login successful:', { token, user });
+                
+                // Navigate to main app
+                router.replace('/(app)/home');
+              } catch (err: any) {
+                setError(err.message);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
           >
-            <Text style={styles.loginButtonText}>Log in</Text>
+            <Text style={styles.loginButtonText}>
+              {loading ? 'Logging in...' : 'Log in'}
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -68,6 +96,16 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  errorText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontFamily: 'Montserrat-SemiBold',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
