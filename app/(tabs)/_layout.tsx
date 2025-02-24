@@ -40,6 +40,27 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="martaHome"
+        options={{
+          title: 'MARTA',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bus.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="parkingHome"
+        options={{
+          title: 'Parking',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="car.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="trafficHome"
+        options={{  
+          title: 'Traffic',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="car.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
