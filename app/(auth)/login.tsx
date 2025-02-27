@@ -76,7 +76,7 @@ export default function LoginScreen() {
                 console.log('Login successful:', { token, user });
                 
                 // Navigate to main app
-                router.replace('/(app)/home');
+                router.replace('/(tabs)');
               } catch (err: any) {
                 setError(err.message);
               } finally {
