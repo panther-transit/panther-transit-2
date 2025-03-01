@@ -41,6 +41,7 @@ export default function Weather() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentDate] = useState(new Date());
 
   const fetchData = async () => {
     try {
@@ -79,9 +80,11 @@ export default function Weather() {
     );
   }
 
-  const currentTemp = weather.hourly.temperature_2m[0];
-  const currentFeelsLike = weather.hourly.apparent_temperature[0];
-  const currentWeatherCode = weather.hourly.weather_code[0];
+  // Use data from the current hour for the current conditions
+  const currentHourIndex = new Date().getHours();
+  const currentTemp = weather.hourly.temperature_2m[currentHourIndex];
+  const currentFeelsLike = weather.hourly.apparent_temperature[currentHourIndex];
+  const currentWeatherCode = weather.hourly.weather_code[currentHourIndex];
 
   return (
     <ScrollView 
@@ -122,44 +125,53 @@ export default function Weather() {
         </View>
         
         <View style={styles.forecastWrapper}>
-          {weather.daily.time.map((day, index) => (
-            <View key={day} style={[styles.forecastDay, index === 0 && styles.todayForecast]}>
-              <View style={styles.dayContainer}>
-                <Text style={[styles.dayText, index === 0 && styles.todayText]}>
-                  {index === 0 ? 'Today' : new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}
-                </Text>
-                {index === 0 && <Text style={styles.dateText}>{new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>}
-              </View>
-              
-              <View style={styles.weatherIconContainer}>
-                <FontAwesome 
-                  name={getWeatherIcon(weather.daily.weather_code[index])} 
-                  size={28} 
-                  color={index === 0 ? "#0039A6" : "#555"} 
-                  style={styles.forecastIcon}
-                />
-              </View>
-              
-              <View style={styles.tempRange}>
-                <Text style={[styles.tempText, index === 0 && styles.todayTemp]}>
-                  {Math.round(weather.daily.temperature_2m_max[index])}°
-                </Text>
-                <Text style={styles.tempDivider}>/</Text>
-                <Text style={styles.tempTextMin}>
-                  {Math.round(weather.daily.temperature_2m_min[index])}°
-                </Text>
-              </View>
-              
-              <View style={styles.precipContainer}>
-                <View style={styles.precipIconContainer}>
-                  <View style={[styles.precipBar, {height: `${Math.min(Math.round(weather.daily.precipitation_probability_max[index]), 100)}%`}]} />
+          {/* Skip the first day (index 0) from the API and start from the second day (index 1) */}
+          {weather.daily.time.slice(1).map((day, index) => {
+            // Adjust the actual API data index (add 1 since we're skipping the first day)
+            const dataIndex = index + 1;
+            return (
+              <View key={day} style={[styles.forecastDay, index === 0 && styles.todayForecast]}>
+                <View style={styles.dayContainer}>
+                  <Text style={[styles.dayText, index === 0 && styles.todayText]}>
+                    {index === 0 ? 'Today' : new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}
+                  </Text>
+                  {index === 0 && (
+                    <Text style={styles.dateText}>
+                      {currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </Text>
+                  )}
                 </View>
-                <Text style={[styles.precipText, index === 0 && styles.todayPrecip]}>
-                  {Math.round(weather.daily.precipitation_probability_max[index])}%
-                </Text>
+                
+                <View style={styles.weatherIconContainer}>
+                  <FontAwesome 
+                    name={getWeatherIcon(weather.daily.weather_code[dataIndex])} 
+                    size={28} 
+                    color={index === 0 ? "#0039A6" : "#555"} 
+                    style={styles.forecastIcon}
+                  />
+                </View>
+                
+                <View style={styles.tempRange}>
+                  <Text style={[styles.tempText, index === 0 && styles.todayTemp]}>
+                    {Math.round(weather.daily.temperature_2m_max[dataIndex])}°
+                  </Text>
+                  <Text style={styles.tempDivider}>/</Text>
+                  <Text style={styles.tempTextMin}>
+                    {Math.round(weather.daily.temperature_2m_min[dataIndex])}°
+                  </Text>
+                </View>
+                
+                <View style={styles.precipContainer}>
+                  <View style={styles.precipIconContainer}>
+                    <View style={[styles.precipBar, {height: `${Math.min(Math.round(weather.daily.precipitation_probability_max[dataIndex]), 100)}%`}]} />
+                  </View>
+                  <Text style={[styles.precipText, index === 0 && styles.todayPrecip]}>
+                    {Math.round(weather.daily.precipitation_probability_max[dataIndex])}%
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </View>
     </ScrollView>
