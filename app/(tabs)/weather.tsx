@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, ActivityIndicator, RefreshControl, ImageBackground } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator, RefreshControl, ImageBackground, TouchableOpacity } from 'react-native';
 import { ThemedText as Text } from '@/components/ThemedText';
 import { api } from '@/app/utils/api';
 import { FontAwesome } from '@expo/vector-icons';
@@ -42,6 +42,7 @@ export default function Weather() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentDate] = useState(new Date());
+  const [showAllDays, setShowAllDays] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -127,6 +128,9 @@ export default function Weather() {
         <View style={styles.forecastWrapper}>
           {/* Skip the first day (index 0) from the API and start from the second day (index 1) */}
           {weather.daily.time.slice(1).map((day, index) => {
+            // Only show first 3 days if showAllDays is false
+            if (!showAllDays && index >= 3) return null;
+            
             // Adjust the actual API data index (add 1 since we're skipping the first day)
             const dataIndex = index + 1;
             return (
@@ -172,6 +176,22 @@ export default function Weather() {
               </View>
             );
           })}
+          
+          {/* Show More / Show Less button */}
+          <TouchableOpacity 
+            style={styles.showMoreButton} 
+            onPress={() => setShowAllDays(!showAllDays)}
+          >
+            <Text style={styles.showMoreText}>
+              {showAllDays ? 'Show Less' : 'Show More'}
+            </Text>
+            <FontAwesome 
+              name={showAllDays ? 'chevron-up' : 'chevron-down'} 
+              size={16} 
+              color={GSU_BLUE} 
+              style={styles.showMoreIcon}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -374,6 +394,24 @@ const styles = StyleSheet.create({
   },
   todayPrecip: {
     color: GSU_BLUE,
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    marginTop: 5,
+  },
+  showMoreText: {
+    color: GSU_BLUE,
+    fontSize: 16,
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  showMoreIcon: {
+    marginTop: 2,
   },
   errorText: {
     textAlign: 'center',
