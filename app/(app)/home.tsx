@@ -35,6 +35,13 @@ export default function HomeScreen() {
         >
           <Text style={styles.buttonText}>Vehicle Traffic</Text>
         </Pressable>
+
+        <Pressable 
+          style={({pressed}) => [styles.button, pressed && styles.buttonPressed]} 
+          onPress={() => router.push('/(tabs)/MapScreen')}
+        >
+          <Text style={styles.buttonText}>View Map</Text>
+        </Pressable>
       </View>
 
       <Pressable 
