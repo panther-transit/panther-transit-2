@@ -109,28 +109,52 @@ export default function Weather() {
 
       <View style={styles.forecastContainer}>
         <Text style={styles.sectionTitle}>7-Day Forecast</Text>
+        
+        <View style={styles.forecastLegend}>
+          <Text style={styles.legendDay}>Day</Text>
+          <Text style={styles.legendWeather}>Weather</Text>
+          <View style={styles.legendTemp}>
+            <Text style={styles.legendLabel}>High/Low</Text>
+          </View>
+          <View style={styles.legendPrecip}>
+            <Text style={styles.legendLabel}>Rain</Text>
+          </View>
+        </View>
+        
         <View style={styles.forecastWrapper}>
           {weather.daily.time.map((day, index) => (
-            <View key={day} style={styles.forecastDay}>
-              <Text style={styles.dayText}>
-                {new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}
-              </Text>
-              <FontAwesome 
-                name={getWeatherIcon(weather.daily.weather_code[index])} 
-                size={28} 
-                color="#0039A6" 
-                style={styles.forecastIcon}
-              />
+            <View key={day} style={[styles.forecastDay, index === 0 && styles.todayForecast]}>
+              <View style={styles.dayContainer}>
+                <Text style={[styles.dayText, index === 0 && styles.todayText]}>
+                  {index === 0 ? 'Today' : new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}
+                </Text>
+                {index === 0 && <Text style={styles.dateText}>{new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>}
+              </View>
+              
+              <View style={styles.weatherIconContainer}>
+                <FontAwesome 
+                  name={getWeatherIcon(weather.daily.weather_code[index])} 
+                  size={28} 
+                  color={index === 0 ? "#0039A6" : "#555"} 
+                  style={styles.forecastIcon}
+                />
+              </View>
+              
               <View style={styles.tempRange}>
-                <Text style={styles.tempText}>
+                <Text style={[styles.tempText, index === 0 && styles.todayTemp]}>
                   {Math.round(weather.daily.temperature_2m_max[index])}°
                 </Text>
+                <Text style={styles.tempDivider}>/</Text>
                 <Text style={styles.tempTextMin}>
                   {Math.round(weather.daily.temperature_2m_min[index])}°
                 </Text>
               </View>
+              
               <View style={styles.precipContainer}>
-                <Text style={styles.precipText}>
+                <View style={styles.precipIconContainer}>
+                  <View style={[styles.precipBar, {height: `${Math.min(Math.round(weather.daily.precipitation_probability_max[index]), 100)}%`}]} />
+                </View>
+                <Text style={[styles.precipText, index === 0 && styles.todayPrecip]}>
                   {Math.round(weather.daily.precipitation_probability_max[index])}%
                 </Text>
               </View>
@@ -221,6 +245,37 @@ const styles = StyleSheet.create({
     color: GSU_BLUE,
     marginBottom: 15,
   },
+  forecastLegend: {
+    flexDirection: 'row',
+    paddingHorizontal: 15,
+    paddingBottom: 8,
+    marginBottom: 5,
+  },
+  legendDay: {
+    flex: 1,
+    fontSize: 12,
+    color: '#888',
+    fontWeight: '500',
+  },
+  legendWeather: {
+    width: 60,
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'center',
+  },
+  legendTemp: {
+    width: 80,
+    alignItems: 'center',
+  },
+  legendPrecip: {
+    width: 45,
+    alignItems: 'center',
+  },
+  legendLabel: {
+    fontSize: 12,
+    color: '#888',
+    fontWeight: '500',
+  },
   forecastDay: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -228,14 +283,34 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  dayText: {
+  todayForecast: {
+    backgroundColor: GSU_BLUE_LIGHT,
+    borderRadius: 10,
+    marginBottom: 5,
+    paddingHorizontal: 10,
+  },
+  dayContainer: {
     flex: 1,
+  },
+  dayText: {
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
+  todayText: {
+    color: GSU_BLUE,
+    fontWeight: '700',
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  weatherIconContainer: {
+    width: 60,
+    alignItems: 'center',
+  },
   forecastIcon: {
-    marginHorizontal: 15,
     width: 30,
     textAlign: 'center',
   },
@@ -243,27 +318,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: 80,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   tempText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
-    marginRight: 8,
+  },
+  tempDivider: {
+    fontSize: 16,
+    color: '#999',
+    marginHorizontal: 2,
+  },
+  todayTemp: {
+    color: GSU_BLUE,
   },
   tempTextMin: {
     fontSize: 16,
     color: '#666',
   },
   precipContainer: {
-    width: 40,
-    alignItems: 'flex-end',
-    marginLeft: 5,
+    width: 45,
+    alignItems: 'center',
+  },
+  precipIconContainer: {
+    height: 24,
+    width: 6,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 3,
+    marginBottom: 4,
+    overflow: 'hidden',
+  },
+  precipBar: {
+    width: '100%',
+    backgroundColor: '#0039A6',
+    position: 'absolute',
+    bottom: 0,
   },
   precipText: {
     fontSize: 14,
-    color: GSU_BLUE,
+    color: '#666',
     fontWeight: '500',
+  },
+  todayPrecip: {
+    color: GSU_BLUE,
   },
   errorText: {
     textAlign: 'center',
