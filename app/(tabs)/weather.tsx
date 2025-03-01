@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   contentContainer: {
-    paddingTop: 55,
+    paddingTop: 60,
     paddingBottom: 20,
   },
   loadingContainer: {
