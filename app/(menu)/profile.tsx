@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'rea
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
-import { supabase } from '../../config/supabase';
+import { supabase } from '../config/supabase';
 ; // Correct path
 
 export default function ProfilePage() {
