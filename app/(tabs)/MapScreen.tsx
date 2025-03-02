@@ -1,13 +1,43 @@
-// screens/MapScreen.tsx
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Text, Platform } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+const MapScreen = () => {
+  const [region, setRegion] = useState<any>(null);
 
-const MapScreen: React.FC = () => {
+  useEffect(() => {
+    const getLocation = async () => {
+      if (Platform.OS === 'web') return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
+      const location = await Location.getCurrentPositionAsync({});
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    };
+
+    getLocation();
+  }, []);
+
+  if (Platform.OS === 'web') return <Text>Map is not available on web.</Text>;
+  if (!region) return <Text>Loading map...</Text>;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>This page is for Google Maps</Text>
-      
+      <MapView
+        style={styles.map}
+        initialRegion={region}
+        showsUserLocation={true}
+        provider={PROVIDER_GOOGLE} // Only Google Maps is supported in Expo
+      >
+        <Marker coordinate={region} title="Your Location" />
+      </MapView>
     </View>
   );
 };
@@ -15,22 +45,10 @@ const MapScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#F8F9FA',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#0039A6',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 20,
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
 
