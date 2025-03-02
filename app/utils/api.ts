@@ -1,10 +1,5 @@
-const API_URL = 'http://localhost:3000/api';
-// Open-Meteo API for weather data
-const OPEN_METEO_API_URL = 'https://api.open-meteo.com/v1';
 
-// Georgia State University coordinates
-const GSU_LATITUDE = 33.75278;
-const GSU_LONGITUDE = -84.38611;
+const API_URL = 'http://YourIPv4/api';
 
 export const api = {
   auth: {
