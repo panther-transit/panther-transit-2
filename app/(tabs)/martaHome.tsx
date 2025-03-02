@@ -1,20 +1,19 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import BusMap from '@/components/martaBusMap';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MartaHome() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.subtitle}>This is the MARTA page.</Text>    
-    </View>
+    <SafeAreaView style = {styles.container}>
+      <BusMap/>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
     backgroundColor: '#F8F9FA',
   },
   welcome: {
