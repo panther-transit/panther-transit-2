@@ -1,3 +1,4 @@
+import { GOOGLE_MAPS_API_KEY } from '@env';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Platform } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -34,7 +35,7 @@ const MapScreen = () => {
         style={styles.map}
         initialRegion={region}
         showsUserLocation={true}
-        provider={PROVIDER_GOOGLE} // Only Google Maps is supported in Expo
+        provider={PROVIDER_GOOGLE} // 
       >
         <Marker coordinate={region} title="Your Location" />
       </MapView>
