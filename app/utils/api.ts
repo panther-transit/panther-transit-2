@@ -1,5 +1,5 @@
 
-const API_URL = 'http://YourIPv4/api';
+const API_URL = 'http://localhost:3000/api';
 
 export const api = {
   auth: {

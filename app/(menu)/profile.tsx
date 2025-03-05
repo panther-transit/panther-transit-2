@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'rea
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
-import { supabase } from '../config/supabase';
-; // Correct path
+import { supabase } from '../../config/supabase';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<{ name: string; email: string; profilePicture: string } | null>(null);
