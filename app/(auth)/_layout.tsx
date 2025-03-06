@@ -1,13 +1,11 @@
-import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { router } from 'expo-router';
 
 export default function AuthLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: '#F8F9FA' },
-        animation: 'slide_from_right',
-      }}
-    />
-  );
+  useEffect(() => {
+    // 🚀 Automatically Skip Login & Go to Main App
+    router.replace('/(tabs)');
+  }, []);
+
+  return null; // Prevents login screen from rendering at all
 }

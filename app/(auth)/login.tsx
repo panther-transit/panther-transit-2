@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../utils/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -59,6 +58,20 @@ export default function LoginScreen() {
             <Text style={styles.errorText}>{error}</Text>
           ) : null}
 
+          {/* 🚀 Skip Authentication and Go Directly to Main App */}
+          <Pressable 
+            style={({pressed}) => [
+              styles.loginButton,
+              pressed && styles.buttonPressed,
+              loading && styles.buttonDisabled
+            ]}
+            onPress={() => router.replace('/(tabs)')} // This skips login
+            disabled={loading}
+          >
+            <Text style={styles.loginButtonText}>Skip Login</Text>
+          </Pressable>
+
+          {/* 🔒 Normal Login Button (For teammates who want authentication) */}
           <Pressable 
             style={({pressed}) => [
               styles.loginButton,
@@ -70,11 +83,9 @@ export default function LoginScreen() {
                 setError('');
                 setLoading(true);
                 
-                const { token, user } = await api.auth.login(email, password);
-                
-                // TODO: Store token and user data
-                console.log('Login successful:', { token, user });
-                
+                // Simulate a successful login without authentication
+                console.log('Skipping authentication...');
+
                 // Navigate to main app
                 router.replace('/(tabs)');
               } catch (err: any) {
