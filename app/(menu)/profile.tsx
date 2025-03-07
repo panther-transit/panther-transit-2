@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#F8F9FA',
   },
   profileImage: {
     width: 100,
@@ -84,6 +85,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',

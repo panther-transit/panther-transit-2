@@ -1,28 +1,29 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { supabase } from '@/config/supabase';
 
 export default function SettingsHome() {
-  const [darkMode, setDarkMode] = useState(false);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      Alert.alert('Logged out', 'You have been logged out.');
+      router.replace('/(auth)/login'); // Redirect to login
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'Failed to log out.');
+    }
+  };
 
   return (
-    <View style={[styles.container, darkMode ? styles.darkContainer : null]}>
-      <Text style={[styles.title, darkMode ? styles.darkText : null]}>Settings</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Settings</Text>
 
-      {/* Navigate to Profile */}
-      <Pressable 
-        style={styles.button} 
-        onPress={() => router.push('/(menu)/profile')}
-      >
+      <Pressable style={styles.button} onPress={() => router.push('/(menu)/profile')}>
         <Text style={styles.buttonText}>Go to Profile</Text>
       </Pressable>
 
-      {/* Toggle Dark Mode */}
-      <Pressable 
-        style={styles.button} 
-        onPress={() => setDarkMode(!darkMode)}
-      >
-        <Text style={styles.buttonText}>{darkMode ? 'Disable' : 'Enable'} Dark Mode</Text>
+      <Pressable style={styles.button} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Log Out</Text>
       </Pressable>
     </View>
   );
@@ -36,38 +37,22 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#F8F9FA',
   },
-  darkContainer: {
-    backgroundColor: '#333', // Dark mode background
-  },
   title: {
     fontSize: 24,
-    fontFamily: 'Montserrat-Bold',
-    color: '#0039A6',
+    fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
-  },
-  darkText: {
-    color: '#fff', // Text color for dark mode
   },
   button: {
     backgroundColor: '#0039A6',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     marginBottom: 15,
-  },
-  buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'Montserrat-SemiBold',
+    fontWeight: 'bold',
   },
 });

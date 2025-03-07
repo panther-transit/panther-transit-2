@@ -1,28 +1,25 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native';
 import { supabase } from '@/config/supabase';
+import { router } from 'expo-router';
 
 export default function EditProfilePage() {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [profilePicture, setProfilePicture] = useState('');
 
   const handleSave = async () => {
-    setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: name },
+      const { data, error } = await supabase.auth.updateUser({
+        data: { full_name: name, avatar_url: profilePicture }
       });
+
       if (error) throw error;
 
-      console.log('Profile updated successfully');
-      router.push('/(menu)/profile'); // Navigate back to profile page
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      Alert.alert('Success', 'Profile updated successfully!');
+      router.back(); // Navigate back to profile
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Could not update profile. Try again.');
     }
   };
 
@@ -30,36 +27,25 @@ export default function EditProfilePage() {
     <View style={styles.container}>
       <Text style={styles.title}>Edit Profile</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput 
-          style={styles.input} 
-          value={name} 
-          onChangeText={setName} 
-          placeholder="Enter your full name"
-        />
-      </View>
+      <Text style={styles.label}>Name</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Enter your new name" 
+        value={name}
+        onChangeText={setName}
+      />
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput 
-          style={styles.input} 
-          value={email} 
-          onChangeText={setEmail} 
-          placeholder="Enter your email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+      <Text style={styles.label}>Profile Picture URL</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Enter new profile picture URL" 
+        value={profilePicture}
+        onChangeText={setProfilePicture}
+      />
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      <Pressable 
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSave}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save Changes'}</Text>
+      {/* Save Button */}
+      <Pressable style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>Save Changes</Text>
       </Pressable>
     </View>
   );
@@ -71,44 +57,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#F8F9FA',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 15,
-  },
   label: {
     fontSize: 16,
     marginBottom: 5,
   },
   input: {
-    width: '100%',
+    width: '90%',
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
+    borderRadius: 8,
+    marginBottom: 15,
   },
   button: {
     backgroundColor: '#0039A6',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
   },
 });
