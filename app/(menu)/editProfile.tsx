@@ -5,21 +5,54 @@ import { router } from 'expo-router';
 
 export default function EditProfilePage() {
   const [name, setName] = useState('');
-  const [profilePicture, setProfilePicture] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSave = async () => {
+  const handleSaveName = async () => {
     try {
-      const { data, error } = await supabase.auth.updateUser({
-        data: { full_name: name, avatar_url: profilePicture }
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: name },
       });
 
       if (error) throw error;
 
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert('Success', 'Name updated successfully!');
       router.back(); // Navigate back to profile
     } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Could not update profile. Try again.');
+      console.error('Error updating name:', error);
+      Alert.alert('Error', 'Could not update name. Try again.');
+    }
+  };
+
+  const handleSaveEmail = async () => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email,
+      });
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Email updated successfully!');
+      router.back(); // Navigate back to profile
+    } catch (error) {
+      console.error('Error updating email:', error);
+      Alert.alert('Error', 'Could not update email. Try again.');
+    }
+  };
+
+  const handleSavePassword = async () => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Password updated successfully!');
+      router.back(); // Navigate back to profile
+    } catch (error) {
+      console.error('Error updating password:', error);
+      Alert.alert('Error', 'Could not update password. Try again.');
     }
   };
 
@@ -27,6 +60,7 @@ export default function EditProfilePage() {
     <View style={styles.container}>
       <Text style={styles.title}>Edit Profile</Text>
 
+      {/* Edit Name Section */}
       <Text style={styles.label}>Name</Text>
       <TextInput 
         style={styles.input} 
@@ -34,18 +68,35 @@ export default function EditProfilePage() {
         value={name}
         onChangeText={setName}
       />
+      <Pressable style={styles.button} onPress={handleSaveName}>
+        <Text style={styles.buttonText}>Save Name</Text>
+      </Pressable>
 
-      <Text style={styles.label}>Profile Picture URL</Text>
+      {/* Edit Email Section */}
+      <Text style={styles.label}>Email</Text>
       <TextInput 
         style={styles.input} 
-        placeholder="Enter new profile picture URL" 
-        value={profilePicture}
-        onChangeText={setProfilePicture}
+        placeholder="Enter your new email" 
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
+      <Pressable style={styles.button} onPress={handleSaveEmail}>
+        <Text style={styles.buttonText}>Save Email</Text>
+      </Pressable>
 
-      {/* Save Button */}
-      <Pressable style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Save Changes</Text>
+      {/* Edit Password Section */}
+      <Text style={styles.label}>Password</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder="Enter your new password" 
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <Pressable style={styles.button} onPress={handleSavePassword}>
+        <Text style={styles.buttonText}>Save Password</Text>
       </Pressable>
     </View>
   );
@@ -82,6 +133,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',

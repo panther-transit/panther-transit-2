@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
 import { supabase } from '@/config/supabase';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<{ name: string; email: string; profilePicture: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -39,23 +38,33 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.container}>
+      <View style={styles.container}>
         <ActivityIndicator size="large" color="#0039A6" />
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
+      {/* Profile Picture */}
       <Image source={{ uri: user?.profilePicture }} style={styles.profileImage} />
-      <ThemedText type="title" style={styles.name}>{user?.name}</ThemedText>
-      <ThemedText type="subtitle" style={styles.email}>{user?.email}</ThemedText>
+
+      {/* User Info Section (Name & Email) */}
+      <View style={styles.infoContainer}>
+        <Text style={[styles.name, isDarkMode ? styles.lightText : styles.darkText]}>{user?.name}</Text>
+        <Text style={[styles.email, isDarkMode ? styles.lightText : styles.darkText]}>{user?.email}</Text>
+      </View>
 
       {/* Edit Profile Button */}
-      <Pressable style={styles.button} onPress={() => router.push('/(menu)/editProfile')}>
-        <Text style={styles.buttonText}>Edit Profile</Text>
+      <Pressable 
+        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]} 
+        onPress={() => router.push('/(menu)/editProfile')}
+      >
+        <Text style={[styles.buttonText, isDarkMode ? styles.darkButtonText : styles.lightButtonText]}>
+          Edit Profile
+        </Text>
       </Pressable>
-    </ThemedView>
+    </View>
   );
 }
 
@@ -63,33 +72,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    justifyContent: 'flex-start',
+    paddingTop: 60,
     backgroundColor: '#F8F9FA',
   },
+  darkBackground: {
+    backgroundColor: '#121212',
+  },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 20,
+    marginTop: 10,
+  },
+  infoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
   name: {
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 5,
   },
   email: {
-    color: '#666',
+    fontSize: 16,
+    color: '#555',
+  },
+  darkText: {
+    color: '#000',
+  },
+  lightText: {
+    color: '#FFF',
   },
   button: {
-    marginTop: 20,
-    backgroundColor: '#0039A6',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  lightButton: {
+    backgroundColor: '#0039A6',
+  },
+  darkButton: {
+    backgroundColor: '#555',
+  },
+  lightButtonText: {
+    color: '#FFF',
+  },
+  darkButtonText: {
+    color: '#FFF',
   },
 });
