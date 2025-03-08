@@ -8,9 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "extra": {
-      "googleMapsApiKey": "YAIzaSyCSQGZDBsvaAxxV1WH1jg8DWKlbqYYIJtE"
-    },
+    
 
     "ios": {
       "supportsTablet": true
