@@ -9,18 +9,43 @@ type WeatherData = {
   hourly: {
     time: string[];
     temperature_2m: number[];
+    relative_humidity_2m: number[];
     apparent_temperature: number[];
     precipitation_probability: number[];
+    precipitation: number[];
     weather_code: number[];
     wind_speed_10m: number[];
     wind_direction_10m: number[];
+    visibility: number[];
+    cloud_cover: number[];
+    pressure_msl: number[];
+    dew_point_2m: number[];
+    soil_temperature_0cm: number[];
+    is_day: number[];
   };
   daily: {
     time: string[];
     weather_code: number[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
+    apparent_temperature_max: number[];
+    apparent_temperature_min: number[];
+    sunrise: string[];
+    sunset: string[];
+    uv_index_max: number[];
+    precipitation_sum: number[];
+    precipitation_hours: number[];
     precipitation_probability_max: number[];
+    wind_speed_10m_max: number[];
+    wind_gusts_10m_max: number[];
+    wind_direction_10m_dominant: number[];
+    sunshine_duration: number[];
+  };
+  hourly_units?: {
+    [key: string]: string;
+  };
+  daily_units?: {
+    [key: string]: string;
   };
 };
 
@@ -108,6 +133,71 @@ export default function Weather() {
             <Text style={styles.temperature}>{Math.round(currentTemp)}°F</Text>
             <Text style={styles.feelsLike}>Feels like {Math.round(currentFeelsLike)}°F</Text>
           </View>
+        </View>
+      </View>
+      
+      {/* Current Conditions Details */}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.sectionTitle}>Current Conditions</Text>
+        <View style={styles.detailsGrid}>
+          <View style={styles.detailItem}>
+            <FontAwesome name="tint" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Humidity</Text>
+            <Text style={styles.detailValue}>{weather.hourly.relative_humidity_2m[currentHourIndex]}%</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="umbrella" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Precipitation</Text>
+            <Text style={styles.detailValue}>{weather.hourly.precipitation_probability[currentHourIndex]}%</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="arrows" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Wind</Text>
+            <Text style={styles.detailValue}>{Math.round(weather.hourly.wind_speed_10m[currentHourIndex])} mph</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="sun-o" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>UV Index</Text>
+            <Text style={styles.detailValue}>{Math.round(weather.daily.uv_index_max[0])}</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="cloud" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Cloud Cover</Text>
+            <Text style={styles.detailValue}>{weather.hourly.cloud_cover[currentHourIndex]}%</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="eye" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Visibility</Text>
+            <Text style={styles.detailValue}>{(weather.hourly.visibility[currentHourIndex] / 1609).toFixed(1)} mi</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="arrow-down" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Pressure</Text>
+            <Text style={styles.detailValue}>{Math.round(weather.hourly.pressure_msl[currentHourIndex] / 33.864)} inHg</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome name="clock-o" size={20} color="#0039A6" />
+            <Text style={styles.detailLabel}>Dew Point</Text>
+            <Text style={styles.detailValue}>{Math.round(weather.hourly.dew_point_2m[currentHourIndex])}°F</Text>
+          </View>
+        </View>
+      </View>
+      
+      {/* Sunrise/Sunset Info */}
+      <View style={styles.sunTimesContainer}>
+        <View style={styles.sunTimeItem}>
+          <FontAwesome name="sun-o" size={24} color="#FF9500" />
+          <Text style={styles.sunTimeLabel}>Sunrise</Text>
+          <Text style={styles.sunTimeValue}>
+            {new Date(weather.daily.sunrise[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+          </Text>
+        </View>
+        <View style={styles.sunTimeItem}>
+          <FontAwesome name="sun-o" size={24} color="#FF3B30" />
+          <Text style={styles.sunTimeLabel}>Sunset</Text>
+          <Text style={styles.sunTimeValue}>
+            {new Date(weather.daily.sunset[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+          </Text>
         </View>
       </View>
 
@@ -418,5 +508,73 @@ const styles = StyleSheet.create({
     margin: 20,
     fontSize: 16,
     color: '#ff3b30',
+  },
+  // Current conditions details styles
+  detailsContainer: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  detailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  detailItem: {
+    width: '48%',
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: GSU_BLUE_LIGHT,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 6,
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: GSU_BLUE,
+  },
+  // Sunrise/Sunset styles
+  sunTimesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  sunTimeItem: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  sunTimeLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  sunTimeValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
   },
 });
