@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#E8F4FD',
   },
   logo: {
     width: 200,
