@@ -1,9 +1,16 @@
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
+import { router } from 'expo-router';
 
 export default function ParkingHome() {
   const [selectedDeck, setSelectedDeck] = useState('');
+
+  const handleCheckPress = () => {
+    if (selectedDeck) {
+      router.push(`../(parkingFiles)/parkingAvailability?deck=${selectedDeck}`);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -27,6 +34,7 @@ export default function ParkingHome() {
       <Pressable 
         style={[styles.button, !selectedDeck && styles.buttonDisabled]} 
         disabled={!selectedDeck}
+        onPress={handleCheckPress}
       >
         <Text style={styles.buttonText}>Check</Text>
       </Pressable>
