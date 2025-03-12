@@ -1,47 +1,45 @@
-import { View, Text, StyleSheet, Switch, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { useTheme } from '@/context/ThemeContext';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Switch } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/themeContext';
 
 export default function NotificationsSettings() {
-  const { isDarkMode } = useTheme(); // Access Dark Mode state
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(false);
+  const { isDarkMode } = useTheme();
+  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    const loadNotificationPreference = async () => {
+      const storedNotifications = await AsyncStorage.getItem('notificationsEnabled');
+      if (storedNotifications !== null) {
+        setIsNotificationsEnabled(storedNotifications === 'true');
+      }
+    };
+    loadNotificationPreference();
+  }, []);
+
+  const toggleNotifications = async () => {
+    const newStatus = !isNotificationsEnabled;
+    setIsNotificationsEnabled(newStatus);
+    await AsyncStorage.setItem('notificationsEnabled', newStatus.toString());
+  };
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
-      <Text style={[styles.title, isDarkMode ? styles.lightText : styles.darkText]}>
-        Notification Settings
-      </Text>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#FFFFFF' }]}>
+      <View style={styles.contentContainer}>
+        <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Notification Settings</Text>
 
-      {/* Push Notifications Toggle */}
-      <View style={[styles.section, isDarkMode && styles.darkSection]}>
-        <Text style={[styles.optionText, isDarkMode ? styles.lightText : styles.darkText]}>
-          Push Notifications
-        </Text>
-        <Switch
-          value={pushNotifications}
-          onValueChange={setPushNotifications}
-        />
+        <View style={styles.switchContainer}>
+          <Text style={[styles.switchLabel, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+            Enable Notifications
+          </Text>
+          <Switch
+            value={isNotificationsEnabled}
+            onValueChange={toggleNotifications}
+            trackColor={{ false: '#767577', true: '#1E88E5' }}
+            thumbColor={isNotificationsEnabled ? '#BB86FC' : '#f4f3f4'}
+          />
+        </View>
       </View>
-
-      {/* Email Notifications Toggle */}
-      <View style={[styles.section, isDarkMode && styles.darkSection]}>
-        <Text style={[styles.optionText, isDarkMode ? styles.lightText : styles.darkText]}>
-          Email Notifications
-        </Text>
-        <Switch
-          value={emailNotifications}
-          onValueChange={setEmailNotifications}
-        />
-      </View>
-
-      {/* Save Button */}
-      <Pressable style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]}>
-        <Text style={[styles.buttonText, isDarkMode ? styles.darkButtonText : styles.lightButtonText]}>
-          Save Changes
-        </Text>
-      </Pressable>
     </View>
   );
 }
@@ -49,55 +47,27 @@ export default function NotificationsSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#F8F9FA',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
   },
-  darkBackground: {
-    backgroundColor: '#121212',
+  contentContainer: {
+    alignItems: 'center',
+    width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  darkText: {
-    color: '#000',
-  },
-  lightText: {
-    color: '#FFF',
-  },
-  section: {
+  switchContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#EEE',
+    marginTop: 10,
   },
-  darkSection: {
-    backgroundColor: '#333',
-  },
-  optionText: {
+  switchLabel: {
     fontSize: 16,
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  lightButton: {
-    backgroundColor: '#0039A6',
-  },
-  darkButton: {
-    backgroundColor: '#555',
-  },
-  lightButtonText: {
-    color: '#FFF',
-  },
-  darkButtonText: {
-    color: '#FFF',
+    marginRight: 10,
   },
 });

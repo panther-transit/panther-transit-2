@@ -1,17 +1,35 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, Switch } from 'react-native';
 import { router } from 'expo-router';
-import { useTheme } from '@/context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/themeContext';
 
 export default function SettingsHome() {
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { isDarkMode, toggleDarkMode, setIsDarkMode } = useTheme();
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadThemePreference = async () => {
+      const storedTheme = await AsyncStorage.getItem('darkMode');
+      if (storedTheme !== null) {
+        setIsDarkMode(storedTheme === 'true');
+      }
+      setLoaded(true);
+    };
+
+    loadThemePreference();
+  }, []);
+
+  if (!loaded) {
+    return null; // Prevents flickering while loading
+  }
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
-      <Text style={[styles.title, isDarkMode ? styles.lightText : styles.darkText]}>Settings</Text>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#F8F9FA' }]}>
+      <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Settings</Text>
 
-      {/* Go to Profile Button */}
-      <Pressable 
-        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]} 
+      <Pressable
+        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]}
         onPress={() => router.push('/(menu)/profile')}
       >
         <Text style={[styles.buttonText, isDarkMode ? styles.darkButtonText : styles.lightButtonText]}>
@@ -19,15 +37,24 @@ export default function SettingsHome() {
         </Text>
       </Pressable>
 
-      {/* Go to Notifications Button */}
-      <Pressable 
-        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]} 
-        onPress={() => router.push('../(menu)/notifications')}
+      <Pressable
+        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]}
+        onPress={() => router.push('/(menu)/notification')}
       >
         <Text style={[styles.buttonText, isDarkMode ? styles.darkButtonText : styles.lightButtonText]}>
           Notification Settings
         </Text>
       </Pressable>
+
+      <View style={styles.switchContainer}>
+        <Text style={[styles.switchLabel, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Enable Dark Mode</Text>
+        <Switch
+          value={isDarkMode}
+          onValueChange={toggleDarkMode}
+          trackColor={{ false: '#767577', true: '#1E88E5' }}
+          thumbColor={isDarkMode ? '#BB86FC' : '#f4f3f4'}
+        />
+      </View>
     </View>
   );
 }
@@ -35,40 +62,44 @@ export default function SettingsHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#F8F9FA',
-  },
-  darkBackground: {
-    backgroundColor: '#121212',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  darkText: {
-    color: '#000',
-  },
-  lightText: {
-    color: '#FFF',
-  },
   button: {
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 20,
+  },
+  darkButton: {
+    backgroundColor: '#333333',
   },
   lightButton: {
     backgroundColor: '#0039A6',
   },
-  darkButton: {
-    backgroundColor: '#555',
+  darkButtonText: {
+    color: '#FFFFFF',
   },
   lightButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
   },
-  darkButtonText: {
-    color: '#FFF',
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  switchLabel: {
+    fontSize: 16,
+    marginRight: 10,
   },
 });

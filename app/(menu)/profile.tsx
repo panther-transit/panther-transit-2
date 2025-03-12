@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { useTheme } from '../context/themeContext';
 import { router } from 'expo-router';
-import { supabase } from '@/config/supabase';
+import { supabase } from '../../config/supabase';
 
 export default function ProfilePage() {
+  const { isDarkMode } = useTheme();
   const [user, setUser] = useState<{ name: string; email: string; profilePicture: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const { data: userData, error } = await supabase.auth.getUser();
         if (error || !userData?.user) {
-          console.warn("Using mock data due to authentication issue.");
           setUser({
             name: 'John Doe',
             email: 'johndoe@example.com',
@@ -45,25 +45,16 @@ export default function ProfilePage() {
   }
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
-      {/* Profile Picture */}
-      <Image source={{ uri: user?.profilePicture }} style={styles.profileImage} />
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#FFFFFF' }]}>
+      <View style={styles.contentContainer}>
+        <Image source={{ uri: user?.profilePicture }} style={styles.profileImage} />
+        <Text style={[styles.name, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>{user?.name}</Text>
+        <Text style={[styles.email, { color: isDarkMode ? '#AAAAAA' : '#666666' }]}>{user?.email}</Text>
 
-      {/* User Info Section (Name & Email) */}
-      <View style={styles.infoContainer}>
-        <Text style={[styles.name, isDarkMode ? styles.lightText : styles.darkText]}>{user?.name}</Text>
-        <Text style={[styles.email, isDarkMode ? styles.lightText : styles.darkText]}>{user?.email}</Text>
+        <Pressable style={styles.button} onPress={() => router.push('/(menu)/editProfile')}>
+          <Text style={styles.buttonText}>Edit Profile</Text>
+        </Pressable>
       </View>
-
-      {/* Edit Profile Button */}
-      <Pressable 
-        style={[styles.button, isDarkMode ? styles.darkButton : styles.lightButton]} 
-        onPress={() => router.push('/(menu)/editProfile')}
-      >
-        <Text style={[styles.buttonText, isDarkMode ? styles.darkButtonText : styles.lightButtonText]}>
-          Edit Profile
-        </Text>
-      </Pressable>
     </View>
   );
 }
@@ -71,57 +62,40 @@ export default function ProfilePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 60,
-    backgroundColor: '#F8F9FA',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
   },
-  darkBackground: {
-    backgroundColor: '#121212',
+  contentContainer: {
+    alignItems: 'center',
+    width: '100%',
   },
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  infoContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
   },
   name: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
     marginBottom: 5,
   },
   email: {
     fontSize: 16,
-    color: '#555',
-  },
-  darkText: {
-    color: '#000',
-  },
-  lightText: {
-    color: '#FFF',
+    marginBottom: 20,
   },
   button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  lightButton: {
+    marginTop: 10,
     backgroundColor: '#0039A6',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
-  darkButton: {
-    backgroundColor: '#555',
-  },
-  lightButtonText: {
-    color: '#FFF',
-  },
-  darkButtonText: {
-    color: '#FFF',
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

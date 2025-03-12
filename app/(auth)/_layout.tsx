@@ -9,3 +9,5 @@ export default function AuthLayout() {
 
   return null; // Prevents login screen from rendering at all
 }
+
+
