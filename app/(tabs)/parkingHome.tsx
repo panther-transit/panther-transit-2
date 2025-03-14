@@ -23,13 +23,12 @@ export default function ParkingHome() {
         style={styles.picker}
       >
         <Picker.Item label=" " value="" />
+        <Picker.Item label="CC Deck" value="CC" />
+        <Picker.Item label="K Deck" value="K" />
         <Picker.Item label="M Deck" value="M" />
         <Picker.Item label="N Deck" value="N" />
-        <Picker.Item label="G Deck" value="G" />
-        <Picker.Item label="K Deck" value="K" />
         <Picker.Item label="S Deck" value="S" />
         <Picker.Item label="T Deck" value="T" />
-        <Picker.Item label="U Deck" value="U" />
       </Picker>
       <Pressable 
         style={[styles.button, !selectedDeck && styles.buttonDisabled]} 
