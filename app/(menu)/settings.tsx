@@ -1,10 +1,44 @@
+
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import { useTheme } from '../context/themeContext';
 
 export default function SettingsHome() {
-  return ( //this file is the Settings page in the menu
-    <View style={styles.container}>
-      <Text style={styles.subtitle}>This is the SETTINGS page.</Text>
+  const { isDarkMode, toggleDarkMode } = useTheme();
+
+  return (
+    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
+      <Text style={[styles.title, isDarkMode && styles.darkText]}>Settings</Text>
+
+      {/* Go to Profile Button */}
+      <Pressable
+        style={[styles.button, isDarkMode && styles.darkButton]}
+        onPress={() => router.push('/(menu)/profile')}
+      >
+        <Text style={[styles.buttonText, isDarkMode && styles.darkButtonText]}>
+          Go to Profile
+        </Text>
+      </Pressable>
+
+      {/* Go to Notifications Button - FIXED */}
+      <Pressable
+        style={[styles.button, isDarkMode && styles.darkButton]}
+        onPress={() => router.push('/(menu)/notifications')} // 🔹 Ensure it's 'notifications' (plural)
+      >
+        <Text style={[styles.buttonText, isDarkMode && styles.darkButtonText]}>
+          Notification Settings
+        </Text>
+      </Pressable>
+
+      {/* Dark Mode Toggle */}
+      <Pressable
+        style={[styles.button, isDarkMode && styles.darkButton]}
+        onPress={toggleDarkMode}
+      >
+        <Text style={[styles.buttonText, isDarkMode && styles.darkButtonText]}>
+          {isDarkMode ? 'Disable Dark Mode' : 'Enable Dark Mode'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -12,43 +46,40 @@ export default function SettingsHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
     backgroundColor: '#F8F9FA',
   },
-  welcome: {
-    fontSize: 24,
-    fontFamily: 'Montserrat-Bold',
-    color: '#0039A6',
-    marginBottom: 8,
-    textAlign: 'center',
+  darkBackground: {
+    backgroundColor: '#1E1E1E',
   },
-  subtitle: {
-    fontSize: 18,
-    fontFamily: 'Montserrat-SemiBold',
-    color: '#666',
-    marginBottom: 32,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
     textAlign: 'center',
+    color: '#0039A6',
+  },
+  darkText: {
+    color: '#FFFFFF',
   },
   button: {
+    marginVertical: 10,
     backgroundColor: '#0039A6',
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+  darkButton: {
+    backgroundColor: '#555',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'Montserrat-SemiBold',
+    textAlign: 'center',
+  },
+  darkButtonText: {
+    color: '#FFF',
   },
 });
