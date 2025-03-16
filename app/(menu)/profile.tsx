@@ -1,59 +1,54 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
-import { supabase } from '../../config/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<{ name: string; email: string; profilePicture: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({
+    name: 'John Doe',
+    email: 'johndoe@example.com', // Ensure email is always shown
+    phone: '',
+    address: '',
+    profilePicture: 'https://via.placeholder.com/100',
+  });
 
   useEffect(() => {
-    // Check if Supabase is available
-    const fetchUserProfile = async () => {
-      try {
-        const { data: userData, error } = await supabase.auth.getUser();
-        if (error || !userData?.user) {
-          console.warn("Using mock data due to authentication issue.");
-          setUser({
-            name: 'John Doe',
-            email: 'johndoe@example.com',
-            profilePicture: 'https://via.placeholder.com/100',
-          });
-        } else {
-          setUser({
-            name: userData.user.user_metadata?.full_name || 'User',
-            email: userData.user.email,
-            profilePicture: userData.user.user_metadata?.avatar_url || 'https://via.placeholder.com/100',
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching user:', err);
-      } finally {
-        setLoading(false);
+    const loadProfile = async () => {
+      const storedProfile = await AsyncStorage.getItem('userProfile');
+      if (storedProfile) {
+        const parsedProfile = JSON.parse(storedProfile);
+        setUser((prevUser) => ({
+          ...prevUser,
+          ...parsedProfile,
+          email: parsedProfile.email || prevUser.email, // Ensure email is always present
+        }));
       }
     };
 
-    fetchUserProfile();
+    loadProfile();
   }, []);
-
-  if (loading) {
-    return (
-      <ThemedView style={styles.container}>
-        <ActivityIndicator size="large" color="#0039A6" />
-      </ThemedView>
-    );
-  }
 
   return (
     <ThemedView style={styles.container}>
-      <Image source={{ uri: user?.profilePicture }} style={styles.profileImage} />
-      <ThemedText type="title" style={styles.name}>{user?.name}</ThemedText>
-      <ThemedText type="subtitle" style={styles.email}>{user?.email}</ThemedText>
+      <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
+      <ThemedText type="title" style={styles.name}>{user.name}</ThemedText>
+      <ThemedText type="subtitle" style={styles.email}>{user.email}</ThemedText>
 
-      {/* Edit Profile Button (Future Expansion) */}
-      <Pressable style={styles.button} onPress={() => router.push('/menu/editProfile')}>
+      {user.phone ? (
+        <ThemedText style={styles.info}>📞 Phone: {user.phone}</ThemedText>
+      ) : (
+        <ThemedText style={styles.optionalInfo}>📞 Phone: Not Provided</ThemedText>
+      )}
+
+      {user.address ? (
+        <ThemedText style={styles.info}>🏠 Address: {user.address}</ThemedText>
+      ) : (
+        <ThemedText style={styles.optionalInfo}>🏠 Address: Not Provided</ThemedText>
+      )}
+
+      <Pressable style={styles.button} onPress={() => router.push('/(menu)/editProfile')}>
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>
     </ThemedView>
@@ -66,6 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#FFFFFF',
   },
   profileImage: {
     width: 100,
@@ -74,10 +70,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   name: {
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 8,
+    color: '#000',
   },
   email: {
-    color: '#666',
+    fontSize: 18,
+    color: '#555',
+  },
+  info: {
+    fontSize: 16,
+    marginTop: 10,
+    color: '#333',
+  },
+  optionalInfo: {
+    fontSize: 16,
+    marginTop: 10,
+    fontStyle: 'italic',
+    color: '#888',
   },
   button: {
     marginTop: 20,
