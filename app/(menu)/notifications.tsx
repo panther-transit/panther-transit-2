@@ -5,40 +5,64 @@ import { useTheme } from '../context/themeContext';
 
 export default function NotificationsSettings() {
   const { isDarkMode } = useTheme();
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
+  
+  // State for toggles
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [transitAlerts, setTransitAlerts] = useState(false);
+  const [weatherAlerts, setWeatherAlerts] = useState(false);
 
+  // Load saved settings from AsyncStorage
   useEffect(() => {
-    const loadNotificationPreference = async () => {
-      const storedNotifications = await AsyncStorage.getItem('notificationsEnabled');
-      if (storedNotifications !== null) {
-        setIsNotificationsEnabled(storedNotifications === 'true');
-      }
+    const loadSettings = async () => {
+      const savedNotifications = await AsyncStorage.getItem('notificationsEnabled');
+      const savedTransitAlerts = await AsyncStorage.getItem('transitAlerts');
+      const savedWeatherAlerts = await AsyncStorage.getItem('weatherAlerts');
+
+      if (savedNotifications !== null) setNotificationsEnabled(JSON.parse(savedNotifications));
+      if (savedTransitAlerts !== null) setTransitAlerts(JSON.parse(savedTransitAlerts));
+      if (savedWeatherAlerts !== null) setWeatherAlerts(JSON.parse(savedWeatherAlerts));
     };
-    loadNotificationPreference();
+
+    loadSettings();
   }, []);
 
-  const toggleNotifications = async () => {
-    const newStatus = !isNotificationsEnabled;
-    setIsNotificationsEnabled(newStatus);
-    await AsyncStorage.setItem('notificationsEnabled', newStatus.toString());
+  // Save settings to AsyncStorage when toggled
+  const toggleSetting = async (settingKey: string, value: boolean, setter: (value: boolean) => void) => {
+    setter(value);
+    await AsyncStorage.setItem(settingKey, JSON.stringify(value));
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#FFFFFF' }]}>
-      <View style={styles.contentContainer}>
-        <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>Notification Settings</Text>
+    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
+      <Text style={[styles.title, isDarkMode && styles.darkText]}>Notification Settings</Text>
 
-        <View style={styles.switchContainer}>
-          <Text style={[styles.switchLabel, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
-            Enable Notifications
-          </Text>
-          <Switch
-            value={isNotificationsEnabled}
-            onValueChange={toggleNotifications}
-            trackColor={{ false: '#767577', true: '#1E88E5' }}
-            thumbColor={isNotificationsEnabled ? '#BB86FC' : '#f4f3f4'}
-          />
-        </View>
+      {/* Master Toggle */}
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Enable Notifications</Text>
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={(value) => toggleSetting('notificationsEnabled', value, setNotificationsEnabled)}
+        />
+      </View>
+
+      {/* Transit Alerts */}
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Transit Alerts</Text>
+        <Switch
+          value={transitAlerts}
+          onValueChange={(value) => toggleSetting('transitAlerts', value, setTransitAlerts)}
+          disabled={!notificationsEnabled} // Disables when notifications are off
+        />
+      </View>
+
+      {/* Weather Alerts */}
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Weather Alerts</Text>
+        <Switch
+          value={weatherAlerts}
+          onValueChange={(value) => toggleSetting('weatherAlerts', value, setWeatherAlerts)}
+          disabled={!notificationsEnabled} // Disables when notifications are off
+        />
       </View>
     </View>
   );
@@ -47,27 +71,34 @@ export default function NotificationsSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: 50,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#F8F9FA',
   },
-  contentContainer: {
-    alignItems: 'center',
-    width: '100%',
+  darkBackground: {
+    backgroundColor: '#1E1E1E',
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
+    color: '#0039A6',
   },
-  switchContainer: {
+  darkText: {
+    color: '#FFFFFF',
+  },
+  settingRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E1E1',
   },
-  switchLabel: {
+  settingText: {
     fontSize: 16,
-    marginRight: 10,
+    color: '#333',
   },
 });
+
