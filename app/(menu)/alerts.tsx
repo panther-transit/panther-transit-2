@@ -1,111 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { 
+  View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator, RefreshControl 
+} from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../utils/api';
-
-// Define the structure of a weather alert
-type WeatherAlert = {
-  type: string;
-  severity: string; // Using string instead of enum for flexibility
-  title: string;
-  message: string;
-  time: string;
-  expires: string;
-};
+import { fetchMartaBusData } from '../utils/martaAPI';
+import { useTheme } from '../context/themeContext';
 
 export default function AlertsHome() {
+  const { isDarkMode } = useTheme();
+  
   const [activeTab, setActiveTab] = useState('weather');
-  const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
+  const [weatherAlerts, setWeatherAlerts] = useState([]);
+  const [transitAlerts, setTransitAlerts] = useState([]);
+  const [campusAlerts, setCampusAlerts] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const [alertsEnabled, setAlertsEnabled] = useState({
+    weather: false,
+    martaBus: false,
+    martaTrain: false,
+    gsuShuttle: false,
+    campusSafety: false
+  });
 
-  const fetchWeatherAlerts = async () => {
+  // Load user preferences from notifications.tsx
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const weather = await AsyncStorage.getItem('weatherAlerts');
+      const martaBus = await AsyncStorage.getItem('martaBusAlerts');
+      const martaTrain = await AsyncStorage.getItem('martaTrainAlerts');
+      const gsuShuttle = await AsyncStorage.getItem('gsuShuttleAlerts');
+      const campusSafety = await AsyncStorage.getItem('campusSafetyAlerts');
+      
+      setAlertsEnabled({
+        weather: JSON.parse(weather) || false,
+        martaBus: JSON.parse(martaBus) || false,
+        martaTrain: JSON.parse(martaTrain) || false,
+        gsuShuttle: JSON.parse(gsuShuttle) || false,
+        campusSafety: JSON.parse(campusSafety) || false,
+      });
+    };
+
+    loadPreferences();
+  }, []);
+
+  // Fetch alerts based on preferences
+  const fetchAlerts = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const alerts = await api.weather.getGSUWeatherAlerts();
-      setWeatherAlerts(alerts);
+      if (alertsEnabled.weather) {
+        const weather = await api.weather.getGSUWeatherAlerts();
+        setWeatherAlerts(weather);
+      }
+      if (alertsEnabled.martaBus || alertsEnabled.martaTrain || alertsEnabled.gsuShuttle) {
+        const transit = await fetchMartaBusData();
+        setTransitAlerts(transit);
+      }
+      if (alertsEnabled.campusSafety) {
+        setCampusAlerts([{ title: 'Campus Alert', message: 'Test campus safety alert' }]);
+      }
     } catch (error) {
-      console.error('Error fetching weather alerts:', error);
+      console.error('Error fetching alerts:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
+  useEffect(() => {
+    fetchAlerts();
+  }, [alertsEnabled]);
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchWeatherAlerts();
-  };
-
-  useEffect(() => {
-    fetchWeatherAlerts();
-  }, []);
-
-  // Get appropriate icon for alert type
-  const getAlertIcon = (alertType: string) => {
-    switch (alertType) {
-      case 'high-temperature':
-        return { icon: 'thermometer-high', color: '#ff9500' };
-      case 'low-temperature':
-        return { icon: 'thermometer-low', color: '#0080ff' };
-      case 'high-wind':
-        return { icon: 'weather-windy', color: '#ff9500' };
-      case 'heavy-rain':
-        return { icon: 'weather-pouring', color: '#0080ff' };
-      case 'uv-exposure':
-        return { icon: 'weather-sunny-alert', color: '#ff9500' };
-      case 'thunderstorm':
-        return { icon: 'weather-lightning', color: '#ff3b30' };
-      case 'snow':
-        return { icon: 'weather-snowy', color: '#0080ff' };
-      case 'freezing-rain':
-        return { icon: 'weather-snowy-rainy', color: '#ff3b30' };
-      case 'fog':
-        return { icon: 'weather-fog', color: '#a0a0a0' };
-      case 'precipitation':
-        return { icon: 'umbrella', color: '#0080ff' };
-      case 'all-clear':
-        return { icon: 'check-circle', color: '#34c759' };
-      case 'system-error':
-        return { icon: 'alert-circle', color: '#ff3b30' };
-      default:
-        return { icon: 'information', color: '#007aff' };
-    }
-  };
-
-  // Get color for alert severity
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'info':
-        return '#007aff';
-      case 'advisory':
-        return '#ff9500';
-      case 'warning':
-        return '#ff3b30';
-      case 'error':
-        return '#ff2d55';
-      default:
-        return '#007aff';
-    }
-  };
-
-  // Format timestamp to readable date
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    await fetchAlerts();
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && styles.darkBackground]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Alerts</Text>
+        <Text style={[styles.headerTitle, isDarkMode && styles.darkText]}>Alerts</Text>
       </View>
-      
+
+      {/* Tab Selection */}
       <View style={styles.tabContainer}>
         <Pressable 
           style={[styles.tabButton, activeTab === 'weather' && styles.activeTabButton]}
@@ -120,18 +101,6 @@ export default function AlertsHome() {
         </Pressable>
         
         <Pressable 
-          style={[styles.tabButton, activeTab === 'campus' && styles.activeTabButton]}
-          onPress={() => setActiveTab('campus')}
-        >
-          <Ionicons 
-            name="school" 
-            size={20} 
-            color={activeTab === 'campus' ? '#0039A6' : '#666'} 
-          />
-          <Text style={[styles.tabText, activeTab === 'campus' && styles.activeTabText]}>Campus</Text>
-        </Pressable>
-        
-        <Pressable 
           style={[styles.tabButton, activeTab === 'transit' && styles.activeTabButton]}
           onPress={() => setActiveTab('transit')}
         >
@@ -142,63 +111,47 @@ export default function AlertsHome() {
           />
           <Text style={[styles.tabText, activeTab === 'transit' && styles.activeTabText]}>Transit</Text>
         </Pressable>
+        
+        <Pressable 
+          style={[styles.tabButton, activeTab === 'campus' && styles.activeTabButton]}
+          onPress={() => setActiveTab('campus')}
+        >
+          <Ionicons 
+            name="school" 
+            size={20} 
+            color={activeTab === 'campus' ? '#0039A6' : '#666'} 
+          />
+          <Text style={[styles.tabText, activeTab === 'campus' && styles.activeTabText]}>Campus</Text>
+        </Pressable>
       </View>
-      
+
+      {/* Content Area */}
       <View style={styles.content}>
-        {activeTab === 'weather' ? (
-          <ScrollView 
-            style={styles.alertsList}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          >
-            {loading && !refreshing ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0039A6" />
-                <Text style={styles.loadingText}>Loading alerts...</Text>
+        <ScrollView 
+          style={styles.alertsList}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          {loading ? (
+            <ActivityIndicator size="large" color="#0039A6" />
+          ) : (
+            activeTab === 'weather' ? weatherAlerts.map((alert, index) => (
+              <View key={index} style={styles.alertCard}>
+                <MaterialCommunityIcons name="weather-lightning" size={24} color="red" />
+                <Text style={styles.alertText}>{alert.title}: {alert.message}</Text>
               </View>
-            ) : weatherAlerts.length > 0 ? (
-              weatherAlerts.map((alert, index) => {
-                const { icon, color } = getAlertIcon(alert.type);
-                const severityColor = getSeverityColor(alert.severity);
-                
-                return (
-                  <View key={index} style={styles.alertCard}>
-                    <View style={styles.alertIconContainer}>
-                      <MaterialCommunityIcons name={icon as any} size={28} color={color} />
-                    </View>
-                    <View style={styles.alertContent}>
-                      <Text style={styles.alertTitle}>{alert.title}</Text>
-                      <Text style={styles.alertMessage}>{alert.message}</Text>
-                      <View style={styles.alertMeta}>
-                        <View style={[styles.severityBadge, { backgroundColor: severityColor }]}>
-                          <Text style={styles.severityText}>{alert.severity.toUpperCase()}</Text>
-                        </View>
-                        <Text style={styles.alertTime}>Updated {formatTime(alert.time)}</Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })
-            ) : (
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="weather-sunny" size={50} color="#999" />
-                <Text style={styles.emptyText}>No weather alerts at this time</Text>
+            )) : activeTab === 'transit' ? transitAlerts.map((bus, index) => (
+              <View key={index} style={styles.alertCard}>
+                <MaterialCommunityIcons name="bus" size={24} color="blue" />
+                <Text style={styles.alertText}>{bus.route}: {bus.latitude}, {bus.longitude}</Text>
               </View>
-            )}
-          </ScrollView>
-        ) : activeTab === 'campus' ? (
-          <View style={styles.placeholderContainer}>
-            <Ionicons name="school-outline" size={60} color="#999" />
-            <Text style={styles.placeholderText}>Campus alerts coming soon</Text>
-          </View>
-        ) : (
-          <View style={styles.placeholderContainer}>
-            <Ionicons name="bus-outline" size={60} color="#999" />
-            <Text style={styles.placeholderText}>Transit alerts coming soon</Text>
-          </View>
-        )}
+            )) : campusAlerts.map((alert, index) => (
+              <View key={index} style={styles.alertCard}>
+                <MaterialCommunityIcons name="school" size={24} color="green" />
+                <Text style={styles.alertText}>{alert.title}: {alert.message}</Text>
+              </View>
+            ))
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -209,184 +162,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
+  darkBackground: {
+    backgroundColor: '#1E1E1E',
+  },
   header: {
     backgroundColor: '#0039A6',
     paddingTop: 60,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    width: '100%',
   },
   headerTitle: {
     fontSize: 24,
-    fontFamily: 'Montserrat-Bold',
+    fontWeight: 'bold',
     color: '#fff',
-    textAlign: 'left',
+  },
+  darkText: {
+    color: '#FFFFFF',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E1E1E1',
-    width: '100%',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
   },
   tabButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 8,
-    marginHorizontal: 4,
-    borderRadius: 8,
   },
   activeTabButton: {
-    backgroundColor: '#f0f5ff',
+    borderBottomWidth: 2,
+    borderBottomColor: '#0039A6',
   },
   tabText: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-Medium',
-    color: '#666',
-    marginLeft: 6,
+    fontSize: 16,
   },
   activeTabText: {
-    color: '#0039A6',
-    fontFamily: 'Montserrat-SemiBold',
-  },
-  content: {
-    flex: 1,
-    width: '100%',
+    fontWeight: 'bold',
   },
   alertsList: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontFamily: 'Montserrat-Medium',
-    color: '#666',
+    padding: 20,
   },
   alertCard: {
-    flexDirection: 'row',
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 10,
   },
-  alertIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#F0F5FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  alertContent: {
-    flex: 1,
-  },
-  alertTitle: {
-    fontSize: 16,
-    fontFamily: 'Montserrat-Bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  alertMessage: {
+  alertText: {
     fontSize: 14,
-    fontFamily: 'Montserrat-Regular',
-    color: '#666',
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  alertMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  severityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  severityText: {
-    fontSize: 10,
-    fontFamily: 'Montserrat-Bold',
-    color: '#fff',
-  },
-  alertTime: {
-    fontSize: 12,
-    fontFamily: 'Montserrat-Regular',
-    color: '#999',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
-  },
-  emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Montserrat-Medium',
-    color: '#666',
-    textAlign: 'center',
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: 'Montserrat-Medium',
-    color: '#666',
-    textAlign: 'center',
-  },
-  welcome: {
-    fontSize: 24,
-    fontFamily: 'Montserrat-Bold',
-    color: '#0039A6',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    fontFamily: 'Montserrat-SemiBold',
-    color: '#666',
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#0039A6',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Montserrat-SemiBold',
   },
 });
