@@ -1,3 +1,4 @@
+// notifications.tsx
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,35 +9,40 @@ export default function NotificationsSettings() {
   
   // State for toggles
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [transitAlerts, setTransitAlerts] = useState(false);
-  const [weatherAlerts, setWeatherAlerts] = useState(false);
+  const [martaTrainAlerts, setMartaTrainAlerts] = useState(false);
+  const [martaBusAlerts, setMartaBusAlerts] = useState(false);
+  const [shuttleAlerts, setShuttleAlerts] = useState(false);
+  const [severeWeatherAlerts, setSevereWeatherAlerts] = useState(false);
+  const [campusSafetyAlerts, setCampusSafetyAlerts] = useState(false);
 
-  // Load saved settings from AsyncStorage
   useEffect(() => {
     const loadSettings = async () => {
       const savedNotifications = await AsyncStorage.getItem('notificationsEnabled');
-      const savedTransitAlerts = await AsyncStorage.getItem('transitAlerts');
-      const savedWeatherAlerts = await AsyncStorage.getItem('weatherAlerts');
+      const savedTrainAlerts = await AsyncStorage.getItem('martaTrainAlerts');
+      const savedBusAlerts = await AsyncStorage.getItem('martaBusAlerts');
+      const savedShuttleAlerts = await AsyncStorage.getItem('shuttleAlerts');
+      const savedWeatherAlerts = await AsyncStorage.getItem('severeWeatherAlerts');
+      const savedSafetyAlerts = await AsyncStorage.getItem('campusSafetyAlerts');
 
       if (savedNotifications !== null) setNotificationsEnabled(JSON.parse(savedNotifications));
-      if (savedTransitAlerts !== null) setTransitAlerts(JSON.parse(savedTransitAlerts));
-      if (savedWeatherAlerts !== null) setWeatherAlerts(JSON.parse(savedWeatherAlerts));
+      if (savedTrainAlerts !== null) setMartaTrainAlerts(JSON.parse(savedTrainAlerts));
+      if (savedBusAlerts !== null) setMartaBusAlerts(JSON.parse(savedBusAlerts));
+      if (savedShuttleAlerts !== null) setShuttleAlerts(JSON.parse(savedShuttleAlerts));
+      if (savedWeatherAlerts !== null) setSevereWeatherAlerts(JSON.parse(savedWeatherAlerts));
+      if (savedSafetyAlerts !== null) setCampusSafetyAlerts(JSON.parse(savedSafetyAlerts));
     };
-
     loadSettings();
   }, []);
 
-  // Save settings to AsyncStorage when toggled
-  const toggleSetting = async (settingKey: string, value: boolean, setter: (value: boolean) => void) => {
+  const toggleSetting = async (key, value, setter) => {
     setter(value);
-    await AsyncStorage.setItem(settingKey, JSON.stringify(value));
+    await AsyncStorage.setItem(key, JSON.stringify(value));
   };
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkBackground]}>
       <Text style={[styles.title, isDarkMode && styles.darkText]}>Notification Settings</Text>
 
-      {/* Master Toggle */}
       <View style={styles.settingRow}>
         <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Enable Notifications</Text>
         <Switch
@@ -44,24 +50,49 @@ export default function NotificationsSettings() {
           onValueChange={(value) => toggleSetting('notificationsEnabled', value, setNotificationsEnabled)}
         />
       </View>
-
-      {/* Transit Alerts */}
+      
       <View style={styles.settingRow}>
-        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Transit Alerts</Text>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>MARTA Train Alerts</Text>
         <Switch
-          value={transitAlerts}
-          onValueChange={(value) => toggleSetting('transitAlerts', value, setTransitAlerts)}
-          disabled={!notificationsEnabled} // Disables when notifications are off
+          value={martaTrainAlerts}
+          onValueChange={(value) => toggleSetting('martaTrainAlerts', value, setMartaTrainAlerts)}
+          disabled={!notificationsEnabled}
         />
       </View>
 
-      {/* Weather Alerts */}
       <View style={styles.settingRow}>
-        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Weather Alerts</Text>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>MARTA Bus Alerts</Text>
         <Switch
-          value={weatherAlerts}
-          onValueChange={(value) => toggleSetting('weatherAlerts', value, setWeatherAlerts)}
-          disabled={!notificationsEnabled} // Disables when notifications are off
+          value={martaBusAlerts}
+          onValueChange={(value) => toggleSetting('martaBusAlerts', value, setMartaBusAlerts)}
+          disabled={!notificationsEnabled}
+        />
+      </View>
+
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>GSU Shuttle Alerts</Text>
+        <Switch
+          value={shuttleAlerts}
+          onValueChange={(value) => toggleSetting('shuttleAlerts', value, setShuttleAlerts)}
+          disabled={!notificationsEnabled}
+        />
+      </View>
+
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Severe Weather Alerts</Text>
+        <Switch
+          value={severeWeatherAlerts}
+          onValueChange={(value) => toggleSetting('severeWeatherAlerts', value, setSevereWeatherAlerts)}
+          disabled={!notificationsEnabled}
+        />
+      </View>
+
+      <View style={styles.settingRow}>
+        <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Campus Safety Alerts</Text>
+        <Switch
+          value={campusSafetyAlerts}
+          onValueChange={(value) => toggleSetting('campusSafetyAlerts', value, setCampusSafetyAlerts)}
+          disabled={!notificationsEnabled}
         />
       </View>
     </View>
@@ -101,4 +132,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
