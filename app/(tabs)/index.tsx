@@ -2,14 +2,25 @@ import { View, Text, StyleSheet, Pressable, Image, Platform, TouchableOpacity, A
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect, useRef } from 'react';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 const { width } = Dimensions.get('window');
+
+// Light mode background colors
+const lightBgColors = ['#E8F4FD', '#f9b9bf', '#FFF6E9', '#EFF8F1'];
+
+// Dark mode background colors - darker shades of the light colors
+const darkBgColors = ['#142c42', '#3d2326', '#2d251c', '#1d2f20'];
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const { isDarkMode, colors } = useAppTheme();
+  
+  // Select the appropriate background colors based on the theme
+  const bgColors = isDarkMode ? darkBgColors : lightBgColors;
   
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -18,8 +29,6 @@ export default function HomeScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   
   const dotPosition = Animated.divide(scrollX, width);
-
-  const bgColors = ['#E8F4FD', '#f9b9bf', '#FFF6E9', '#EFF8F1'];
 
   useEffect(() => {
     // Start the welcome animation
@@ -85,16 +94,16 @@ export default function HomeScreen() {
       {!showSplash && (
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setMenuOpen(!menuOpen)}>
-            <Ionicons name="menu" size={30} color="#0039A6" />
+            <Ionicons name="menu" size={30} color={colors.primary} />
           </TouchableOpacity>
         </View>
       )}
       
       {/* Sidebar menu */}
       {menuOpen && (
-        <View style={styles.sidebar}>
+        <View style={[styles.sidebar, { backgroundColor: isDarkMode ? colors.card : '#E8F4FD' }]}>
           <Pressable style={styles.closeButton} onPress={() => setMenuOpen(false)}>
-            <Ionicons name="close" size={30} color="#0039A6" />
+            <Ionicons name="close" size={30} color={colors.primary} />
           </Pressable>
           
           <TouchableOpacity 
@@ -104,8 +113,8 @@ export default function HomeScreen() {
               setMenuOpen(false);
             }}
           >
-            <Ionicons name="warning-outline" size={24} color="#0039A6" style={styles.menuIcon} />
-            <Text style={styles.menuItem}>Alerts</Text>
+            <Ionicons name="warning-outline" size={24} color={colors.primary} style={styles.menuIcon} />
+            <Text style={[styles.menuItem, { color: colors.primary }]}>Alerts</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -115,8 +124,8 @@ export default function HomeScreen() {
               setMenuOpen(false);
             }}
           >
-            <Ionicons name="settings-outline" size={24} color="#0039A6" style={styles.menuIcon} />
-            <Text style={styles.menuItem}>Settings</Text>
+            <Ionicons name="settings-outline" size={24} color={colors.primary} style={styles.menuIcon} />
+            <Text style={[styles.menuItem, { color: colors.primary }]}>Settings</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -126,8 +135,8 @@ export default function HomeScreen() {
               setMenuOpen(false);
             }}
           >
-            <Ionicons name="log-out-outline" size={24} color="#0039A6" style={styles.menuIcon} />
-            <Text style={styles.menuItem}>Log Out</Text>
+            <Ionicons name="log-out-outline" size={24} color={colors.primary} style={styles.menuIcon} />
+            <Text style={[styles.menuItem, { color: colors.primary }]}>Log Out</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -136,12 +145,16 @@ export default function HomeScreen() {
       {showSplash ? (
         <Animated.View style={[
           styles.splashContainer,
-          { opacity: fadeAnim }
+          { 
+            opacity: fadeAnim,
+            backgroundColor: isDarkMode ? '#0c1825' : '#E8F4FA'
+          }
         ]}>
           <Animated.Text style={[
             styles.splashText,
             {
               opacity: textOpacity,
+              color: colors.primary,
               transform: [
                 { scale: scaleAnim },
                 { translateY: textPositionY }
@@ -172,40 +185,46 @@ export default function HomeScreen() {
           >
             {/* Page 1: Safety Tips */}
             <View style={styles.page}>
-              <Text style={styles.sectionTitle}>Safety Tips & Information</Text>
-              <View style={styles.contentCard}>
-                <Text style={styles.subtitle}>• Be aware of your surroundings and report suspicious activity.</Text>
-                <Text style={styles.subtitle}>• Call GSU Police at (404) 413-2100 if you notice anything unusual.</Text>
-                <Text style={styles.subtitle}>• Use the GSU LiveSafe App or Campus Crime Stoppers at 404-577-TIPS to submit tips.</Text>
-                <Text style={styles.subtitle}>• Request a safety escort on campus by calling (404) 413-2100.</Text>
-                <Text style={styles.subtitle}>• Contact Crime Prevention at (404) 413-3213 for safety programs and tips.</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary }]}>Safety Tips & Information</Text>
+              <View style={[styles.contentCard, { 
+                backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.85)' 
+              }]}>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Be aware of your surroundings and report suspicious activity.</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Call GSU Police at (404) 413-2100 if you notice anything unusual.</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Use the GSU LiveSafe App or Campus Crime Stoppers at 404-577-TIPS to submit tips.</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Request a safety escort on campus by calling (404) 413-2100.</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Contact Crime Prevention at (404) 413-3213 for safety programs and tips.</Text>
               </View>
-              <Text style={styles.swipeText}>Swipe →</Text>
+              <Text style={[styles.swipeText, { color: colors.primary }]}>Swipe →</Text>
             </View>
 
             {/* Page 2: Emergency Contacts */}
             <View style={styles.page}>
-              <Text style={styles.sectionTitle}>Emergency Contacts</Text>
-              <View style={styles.contentCard}>
-                <Text style={styles.subtitle}>• GSU Police Department: (404) 413-3333</Text>
-                <Text style={styles.subtitle}>• GSU Emergency: (404) 413-2100</Text>
-                <Text style={styles.subtitle}>• MARTA Customer Service: (404) 848-5000</Text>
-                <Text style={styles.subtitle}>• Safe Ride (GSU Escort Service): (404) 413-2100</Text>
-                <Text style={styles.subtitle}>• Email: police@gsu.edu</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary }]}>Emergency Contacts</Text>
+              <View style={[styles.contentCard, { 
+                backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.85)' 
+              }]}>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• GSU Police Department: (404) 413-3333</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• GSU Emergency: (404) 413-2100</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• MARTA Customer Service: (404) 848-5000</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Safe Ride (GSU Escort Service): (404) 413-2100</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• Email: police@gsu.edu</Text>
               </View>
-              <Text style={styles.swipeText}>Swipe →</Text>
+              <Text style={[styles.swipeText, { color: colors.primary }]}>Swipe →</Text>
             </View>
 
             {/* Page 3: Safe travels message */}
             <View style={styles.page}>
-              <View style={styles.contentCard}>
-                <Text style={styles.welcomeMessage}>Georgia State University</Text>
-                <Text style={styles.messageTitle}>Wishes You Safe Travels</Text>
-                <Ionicons name="heart" size={60} color="#D22B2B" style={styles.heartIcon} />
-                <Text style={styles.subtitle}>Your safety is our priority.</Text>
-                <Text style={styles.subtitle}>Thank you for using Panther Transit!</Text>
+              <View style={[styles.contentCard, { 
+                backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.85)' 
+              }]}>
+                <Text style={[styles.welcomeMessage, { color: colors.primary }]}>Panther Transit</Text>
+                <Text style={[styles.messageTitle, { color: colors.primary }]}>Wishes You Safe Travels</Text>
+                <Ionicons name="heart" size={60} color={isDarkMode ? "#ff5c5c" : "#D22B2B"} style={styles.heartIcon} />
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>Your safety is our priority.</Text>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>Thank you for using Panther Transit!</Text>
               </View>
-              <Text style={styles.swipeText}>← Swipe to return</Text>
+              <Text style={[styles.swipeText, { color: colors.primary }]}>← Swipe to return</Text>
             </View>
           </Animated.ScrollView>
 
@@ -232,7 +251,11 @@ export default function HomeScreen() {
                   <Animated.View 
                     style={[
                       styles.paginationDot, 
-                      { opacity, transform: [{ scale }] }
+                      { 
+                        backgroundColor: colors.primary,
+                        opacity, 
+                        transform: [{ scale }] 
+                      }
                     ]}
                   />
                 </TouchableOpacity>
@@ -383,6 +406,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     marginHorizontal: 8,
-    backgroundColor: '#0039A6',
+    backgroundColor: '#0039A6', // This color will be overridden by the animated style
   },
 });
