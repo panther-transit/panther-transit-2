@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, MapStyleElement } from 'react-native-maps';
 import { fetchMartaBusData, BusPosition } from '../app/utils/martaAPI';
 
-const BusMap: React.FC = () => {
+interface BusMapProps {
+  isDarkMode?: boolean;
+}
+
+const BusMap: React.FC<BusMapProps> = ({ isDarkMode = false }) => {
   const [buses, setBuses] = useState<BusPosition[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +33,120 @@ const BusMap: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Dark mode map style
+  const darkMapStyle: MapStyleElement[] = [
+    {
+      "elementType": "geometry",
+      "stylers": [
+        {
+          "color": "#242f3e"
+        }
+      ]
+    },
+    {
+      "elementType": "labels.text.fill",
+      "stylers": [
+        {
+          "color": "#746855"
+        }
+      ]
+    },
+    {
+      "elementType": "labels.text.stroke",
+      "stylers": [
+        {
+          "color": "#242f3e"
+        }
+      ]
+    },
+    {
+      "featureType": "administrative.locality",
+      "elementType": "labels.text.fill",
+      "stylers": [
+        {
+          "color": "#d59563"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry",
+      "stylers": [
+        {
+          "color": "#38414e"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry.stroke",
+      "stylers": [
+        {
+          "color": "#212a37"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels.text.fill",
+      "stylers": [
+        {
+          "color": "#9ca5b3"
+        }
+      ]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "geometry",
+      "stylers": [
+        {
+          "color": "#746855"
+        }
+      ]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "geometry",
+      "stylers": [
+        {
+          "color": "#2f3948"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [
+        {
+          "color": "#17263c"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.fill",
+      "stylers": [
+        {
+          "color": "#515c6d"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.stroke",
+      "stylers": [
+        {
+          "color": "#17263c"
+        }
+      ]
+    }
+  ];
+
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
+        customMapStyle={isDarkMode ? darkMapStyle : []}
         initialRegion={{
           latitude: 33.749,
           longitude: -84.388,
@@ -55,14 +169,22 @@ const BusMap: React.FC = () => {
       </MapView>
       
       {loading && !buses.length && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>Loading bus locations...</Text>
+        <View style={[styles.overlay, {
+          backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)'
+        }]}>
+          <Text style={[styles.overlayText, {
+            color: isDarkMode ? '#4DA6FF' : '#0039A6'
+          }]}>Loading bus locations...</Text>
         </View>
       )}
       
       {error && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>{error}</Text>
+        <View style={[styles.overlay, {
+          backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)'
+        }]}>
+          <Text style={[styles.overlayText, {
+            color: isDarkMode ? '#4DA6FF' : '#0039A6'
+          }]}>{error}</Text>
         </View>
       )}
     </View>
