@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { MaterialCommunityIcons, Ionicons, FontAwesome } from '@expo/vector-icons';
 import { api } from '../utils/api';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 // Define the structure of a weather alert
 type WeatherAlert = {
@@ -33,6 +34,7 @@ export default function AlertsHome() {
   const [transitAlerts, setTransitAlerts] = useState<TransitAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { isDarkMode, colors } = useAppTheme();
 
   const fetchWeatherAlerts = async () => {
     try {
@@ -240,46 +242,64 @@ export default function AlertsHome() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F8F9FA' }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Text style={styles.headerTitle}>Alerts</Text>
       </View>
       
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { 
+        backgroundColor: isDarkMode ? colors.card : '#fff',
+        borderBottomColor: isDarkMode ? colors.border : '#E1E1E1'
+      }]}>
         <Pressable 
-          style={[styles.tabButton, activeTab === 'weather' && styles.activeTabButton]}
+          style={[styles.tabButton, activeTab === 'weather' && [styles.activeTabButton, { 
+            backgroundColor: isDarkMode ? colors.surfaceHighlight : '#f0f5ff'
+          }]]}
           onPress={() => setActiveTab('weather')}
         >
           <Ionicons 
             name="cloud" 
             size={20} 
-            color={activeTab === 'weather' ? '#0039A6' : '#666'} 
+            color={activeTab === 'weather' ? colors.primary : isDarkMode ? colors.textMuted : '#666'} 
           />
-          <Text style={[styles.tabText, activeTab === 'weather' && styles.activeTabText]}>Weather</Text>
+          <Text style={[styles.tabText, 
+            { color: isDarkMode ? colors.textMuted : '#666' },
+            activeTab === 'weather' && [styles.activeTabText, { color: colors.primary }]
+          ]}>Weather</Text>
         </Pressable>
         
         <Pressable 
-          style={[styles.tabButton, activeTab === 'campus' && styles.activeTabButton]}
+          style={[styles.tabButton, activeTab === 'campus' && [styles.activeTabButton, { 
+            backgroundColor: isDarkMode ? colors.surfaceHighlight : '#f0f5ff'
+          }]]}
           onPress={() => setActiveTab('campus')}
         >
           <Ionicons 
             name="school" 
             size={20} 
-            color={activeTab === 'campus' ? '#0039A6' : '#666'} 
+            color={activeTab === 'campus' ? colors.primary : isDarkMode ? colors.textMuted : '#666'} 
           />
-          <Text style={[styles.tabText, activeTab === 'campus' && styles.activeTabText]}>Campus</Text>
+          <Text style={[styles.tabText, 
+            { color: isDarkMode ? colors.textMuted : '#666' },
+            activeTab === 'campus' && [styles.activeTabText, { color: colors.primary }]
+          ]}>Campus</Text>
         </Pressable>
         
         <Pressable 
-          style={[styles.tabButton, activeTab === 'transit' && styles.activeTabButton]}
+          style={[styles.tabButton, activeTab === 'transit' && [styles.activeTabButton, { 
+            backgroundColor: isDarkMode ? colors.surfaceHighlight : '#f0f5ff'
+          }]]}
           onPress={() => setActiveTab('transit')}
         >
           <Ionicons 
             name="bus" 
             size={20} 
-            color={activeTab === 'transit' ? '#0039A6' : '#666'} 
+            color={activeTab === 'transit' ? colors.primary : isDarkMode ? colors.textMuted : '#666'} 
           />
-          <Text style={[styles.tabText, activeTab === 'transit' && styles.activeTabText]}>Transit</Text>
+          <Text style={[styles.tabText, 
+            { color: isDarkMode ? colors.textMuted : '#666' },
+            activeTab === 'transit' && [styles.activeTabText, { color: colors.primary }]
+          ]}>Transit</Text>
         </Pressable>
       </View>
       
@@ -294,8 +314,8 @@ export default function AlertsHome() {
           >
             {loading && !refreshing ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0039A6" />
-                <Text style={styles.loadingText}>Loading alerts...</Text>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={[styles.loadingText, { color: isDarkMode ? colors.textMuted : '#666' }]}>Loading alerts...</Text>
               </View>
             ) : weatherAlerts.length > 0 ? (
               weatherAlerts.map((alert, index) => {
@@ -303,18 +323,24 @@ export default function AlertsHome() {
                 const severityColor = getSeverityColor(alert.severity);
                 
                 return (
-                  <View key={index} style={styles.alertCard}>
-                    <View style={styles.alertIconContainer}>
+                  <View key={index} style={[styles.alertCard, { 
+                    backgroundColor: isDarkMode ? colors.card : '#fff',
+                    shadowColor: isDarkMode ? '#000' : '#000',
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                  }]}>
+                    <View style={[styles.alertIconContainer, {
+                      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#F0F5FF'
+                    }]}>
                       <MaterialCommunityIcons name={icon as any} size={28} color={color} />
                     </View>
                     <View style={styles.alertContent}>
-                      <Text style={styles.alertTitle}>{alert.title}</Text>
-                      <Text style={styles.alertMessage}>{alert.message}</Text>
+                      <Text style={[styles.alertTitle, { color: isDarkMode ? colors.text : '#333' }]}>{alert.title}</Text>
+                      <Text style={[styles.alertMessage, { color: isDarkMode ? colors.textMuted : '#666' }]}>{alert.message}</Text>
                       <View style={styles.alertMeta}>
                         <View style={[styles.severityBadge, { backgroundColor: severityColor }]}>
                           <Text style={styles.severityText}>{alert.severity.toUpperCase()}</Text>
                         </View>
-                        <Text style={styles.alertTime}>Updated {formatTime(alert.time)}</Text>
+                        <Text style={[styles.alertTime, { color: isDarkMode ? colors.textMuted : '#999' }]}>Updated {formatTime(alert.time)}</Text>
                       </View>
                     </View>
                   </View>
@@ -322,15 +348,15 @@ export default function AlertsHome() {
               })
             ) : (
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="weather-sunny" size={50} color="#999" />
-                <Text style={styles.emptyText}>No weather alerts at this time</Text>
+                <MaterialCommunityIcons name="weather-sunny" size={50} color={isDarkMode ? colors.textMuted : '#999'} />
+                <Text style={[styles.emptyText, { color: isDarkMode ? colors.textMuted : '#666' }]}>No weather alerts at this time</Text>
               </View>
             )}
           </ScrollView>
         ) : activeTab === 'campus' ? (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="school-outline" size={60} color="#999" />
-            <Text style={styles.placeholderText}>Campus alerts coming soon</Text>
+            <Ionicons name="school-outline" size={60} color={isDarkMode ? colors.textMuted : '#999'} />
+            <Text style={[styles.placeholderText, { color: isDarkMode ? colors.textMuted : '#666' }]}>Campus alerts coming soon</Text>
           </View>
         ) : (
           <ScrollView 
@@ -342,8 +368,8 @@ export default function AlertsHome() {
           >
             {loading && !refreshing ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0039A6" />
-                <Text style={styles.loadingText}>Loading transit alerts...</Text>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={[styles.loadingText, { color: isDarkMode ? colors.textMuted : '#666' }]}>Loading transit alerts...</Text>
               </View>
             ) : transitAlerts.length > 0 ? (
               transitAlerts.map((alert, index) => {
@@ -352,37 +378,43 @@ export default function AlertsHome() {
                 const severityColor = getSeverityColor(alert.severity);
                 
                 return (
-                  <View key={index} style={styles.transitAlertCard}>
+                  <View key={index} style={[styles.transitAlertCard, { 
+                    backgroundColor: isDarkMode ? colors.card : '#fff',
+                    shadowColor: isDarkMode ? '#000' : '#000',
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                  }]}>
                     <View style={[styles.routeIndicator, { backgroundColor: routeColor }]}>
                       <Text style={styles.routeIndicatorText}>{alert.routeId.toUpperCase()}</Text>
                     </View>
                     <View style={styles.transitAlertHeader}>
                       <View style={styles.transitAlertTitleContainer}>
                         <MaterialCommunityIcons name={icon as any} size={22} color={color} style={styles.transitAlertTypeIcon} />
-                        <Text style={styles.transitAlertTitle}>{alert.title}</Text>
+                        <Text style={[styles.transitAlertTitle, { color: isDarkMode ? colors.text : '#333' }]}>{alert.title}</Text>
                       </View>
                       <View style={[styles.severityBadge, { backgroundColor: severityColor }]}>
                         <Text style={styles.severityText}>{alert.severity.toUpperCase()}</Text>
                       </View>
                     </View>
                     <View style={styles.alertContent}>
-                      <Text style={styles.alertMessage}>{alert.message}</Text>
+                      <Text style={[styles.alertMessage, { color: isDarkMode ? colors.textMuted : '#666' }]}>{alert.message}</Text>
                     </View>
                     {alert.affectedStops && alert.affectedStops.length > 0 && (
-                      <View style={styles.affectedStopsContainer}>
-                        <Text style={styles.affectedStopsTitle}>Affected Stops:</Text>
+                      <View style={[styles.affectedStopsContainer, {
+                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f8f8f8'
+                      }]}>
+                        <Text style={[styles.affectedStopsTitle, { color: isDarkMode ? colors.text : '#333' }]}>Affected Stops:</Text>
                         <View style={styles.stopsList}>
                           {alert.affectedStops.map((stop, stopIndex) => (
                             <View key={stopIndex} style={styles.stopItem}>
                               <FontAwesome name="map-marker" size={14} color={routeColor} style={styles.stopIcon} />
-                              <Text style={styles.stopName}>{stop}</Text>
+                              <Text style={[styles.stopName, { color: isDarkMode ? colors.textMuted : '#555' }]}>{stop}</Text>
                             </View>
                           ))}
                         </View>
                       </View>
                     )}
                     <View style={styles.alertMeta}>
-                      <Text style={styles.alertTime}>Updated {formatTime(alert.time)}</Text>
+                      <Text style={[styles.alertTime, { color: isDarkMode ? colors.textMuted : '#999' }]}>Updated {formatTime(alert.time)}</Text>
                       <View style={styles.routeBadge}>
                         <FontAwesome name="bus" size={12} color="#fff" />
                         <Text style={styles.routeBadgeText}>{alert.routeName}</Text>
@@ -393,8 +425,8 @@ export default function AlertsHome() {
               })
             ) : (
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="bus-clock" size={50} color="#999" />
-                <Text style={styles.emptyText}>No transit alerts at this time</Text>
+                <MaterialCommunityIcons name="bus-clock" size={50} color={isDarkMode ? colors.textMuted : '#999'} />
+                <Text style={[styles.emptyText, { color: isDarkMode ? colors.textMuted : '#666' }]}>No transit alerts at this time</Text>
               </View>
             )}
           </ScrollView>
