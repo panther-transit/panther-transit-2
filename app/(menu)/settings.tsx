@@ -27,9 +27,13 @@ const ThemeRadioButton: React.FC<ThemeRadioButtonProps> = ({ selected, onPress, 
     <TouchableOpacity 
       style={[
         styles.radioOption, 
-        { backgroundColor: isDarkMode ? colors.surfaceHighlight : 'rgba(0, 0, 0, 0.03)' },
+        { 
+          backgroundColor: isDarkMode 
+            ? colors.surfaceHighlight
+            : 'rgba(0, 0, 0, 0.03)'
+        },
         selected && {
-          backgroundColor: isDarkMode ? 'rgba(10, 126, 164, 0.2)' : 'rgba(0, 57, 166, 0.1)'
+          borderColor: colors.primary
         }
       ]} 
       onPress={onPress}
@@ -51,8 +55,11 @@ const ThemeRadioButton: React.FC<ThemeRadioButtonProps> = ({ selected, onPress, 
       </Text>
       <View style={[
         styles.radioButton, 
-        { borderColor: isDarkMode ? colors.border : colors.borderLight },
-        selected && { borderColor: colors.primary }
+        { 
+          borderColor: selected 
+            ? colors.primary 
+            : isDarkMode ? colors.border : colors.borderLight 
+        }
       ]}>
         {selected && (
           <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
@@ -153,7 +160,22 @@ export default function SettingsHome() {
         <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
       </View>
       
-      {/* Appearance Section */}
+      {/* Account Section - Moved to top */}
+      <SettingsSection title="Account">
+        <SettingsItem 
+          icon="person-outline" 
+          title="Profile" 
+          onPress={() => router.push('/(menu)/profile')}
+        />
+        <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+        <SettingsItem 
+          icon="notifications-outline" 
+          title="Notifications" 
+          onPress={() => router.push('/(menu)/notifications')}
+        />
+      </SettingsSection>
+      
+      {/* Appearance Section - Moved below account */}
       <SettingsSection title="Appearance">
         <View style={styles.themeOptions}>
           <ThemeRadioButton 
@@ -175,21 +197,6 @@ export default function SettingsHome() {
             icon="moon-outline"
           />
         </View>
-      </SettingsSection>
-      
-      {/* Account Section */}
-      <SettingsSection title="Account">
-        <SettingsItem 
-          icon="person-outline" 
-          title="Profile" 
-          onPress={() => router.push('/(menu)/profile')}
-        />
-        <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
-        <SettingsItem 
-          icon="notifications-outline" 
-          title="Notifications" 
-          onPress={() => router.push('/(menu)/notifications')}
-        />
       </SettingsSection>
       
       {/* App Settings Section removed as requested */}
@@ -273,6 +280,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
   },
+  darkIconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
   settingsItemTitle: {
     fontSize: 16,
     fontWeight: '500',
@@ -294,6 +304,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   radioIconContainer: {
     marginRight: 16,
