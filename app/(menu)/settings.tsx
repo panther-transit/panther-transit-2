@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { Ionicons, Ionicons as Icon } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useTheme, ThemeMode } from '../context/themeContext';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 // Custom radio button component for theme selection
 type ThemeRadioButtonProps = {
@@ -20,15 +21,16 @@ type ThemeRadioButtonProps = {
 };
 
 const ThemeRadioButton: React.FC<ThemeRadioButtonProps> = ({ selected, onPress, label, icon }) => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useAppTheme();
   
   return (
     <TouchableOpacity 
       style={[
         styles.radioOption, 
-        selected && styles.radioSelected,
-        isDarkMode && styles.darkRadioOption,
-        selected && isDarkMode && styles.darkRadioSelected
+        { backgroundColor: isDarkMode ? colors.surfaceHighlight : 'rgba(0, 0, 0, 0.03)' },
+        selected && {
+          backgroundColor: isDarkMode ? 'rgba(10, 126, 164, 0.2)' : 'rgba(0, 57, 166, 0.1)'
+        }
       ]} 
       onPress={onPress}
       activeOpacity={0.7}
@@ -37,24 +39,23 @@ const ThemeRadioButton: React.FC<ThemeRadioButtonProps> = ({ selected, onPress, 
         <Ionicons 
           name={icon} 
           size={24} 
-          color={selected ? '#0039A6' : isDarkMode ? '#888' : '#555'} 
+          color={selected ? colors.primary : isDarkMode ? colors.textMuted : colors.textSecondary} 
         />
       </View>
       <Text style={[
         styles.radioLabel, 
-        selected && styles.radioLabelSelected,
-        isDarkMode && styles.darkText
+        { color: isDarkMode ? colors.text : colors.textSecondary },
+        selected && { color: colors.primary, fontWeight: '600' }
       ]}>
         {label}
       </Text>
       <View style={[
         styles.radioButton, 
-        selected && styles.radioButtonSelected,
-        isDarkMode && styles.darkRadioButton,
-        selected && isDarkMode && styles.darkRadioButtonSelected
+        { borderColor: isDarkMode ? colors.border : colors.borderLight },
+        selected && { borderColor: colors.primary }
       ]}>
         {selected && (
-          <View style={styles.radioButtonInner} />
+          <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
         )}
       </View>
     </TouchableOpacity>
@@ -68,11 +69,11 @@ type SettingsSectionProps = {
 };
 
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, children }) => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useAppTheme();
   
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, isDarkMode && styles.darkText]}>
+      <Text style={[styles.sectionTitle, { color: colors.primary }]}>
         {title}
       </Text>
       <BlurView 
@@ -80,7 +81,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, children }) =>
         tint={isDarkMode ? 'dark' : 'light'} 
         style={[
           styles.sectionContent,
-          isDarkMode && styles.darkSectionContent
+          { backgroundColor: isDarkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(255, 255, 255, 0.7)' }
         ]}
       >
         {children}
@@ -98,7 +99,7 @@ type SettingsItemProps = {
 };
 
 const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, onPress, rightElement }) => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, colors } = useAppTheme();
   
   return (
     <TouchableOpacity 
@@ -115,12 +116,12 @@ const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, onPress, right
           <Ionicons 
             name={icon} 
             size={20} 
-            color={isDarkMode ? '#fff' : '#0039A6'} 
+            color={isDarkMode ? colors.text : colors.primary} 
           />
         </View>
         <Text style={[
           styles.settingsItemTitle,
-          isDarkMode && styles.darkText
+          { color: colors.text }
         ]}>
           {title}
         </Text>
@@ -131,7 +132,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, onPress, right
         <Ionicons 
           name="chevron-forward" 
           size={20} 
-          color={isDarkMode ? '#888' : '#999'} 
+          color={isDarkMode ? colors.textMuted : colors.textSecondary} 
         />
       )}
     </TouchableOpacity>
@@ -139,16 +140,17 @@ const SettingsItem: React.FC<SettingsItemProps> = ({ icon, title, onPress, right
 };
 
 export default function SettingsHome() {
-  const { themeMode, isDarkMode, setThemeMode } = useTheme();
+  const { themeMode, setThemeMode } = useTheme();
+  const { isDarkMode, colors } = useAppTheme();
 
   return (
     <ScrollView 
-      style={[styles.container, isDarkMode && styles.darkBackground]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, isDarkMode && styles.darkText]}>Settings</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
       </View>
       
       {/* Appearance Section */}
@@ -182,7 +184,7 @@ export default function SettingsHome() {
           title="Profile" 
           onPress={() => router.push('/(menu)/profile')}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <SettingsItem 
           icon="notifications-outline" 
           title="Notifications" 
@@ -199,13 +201,13 @@ export default function SettingsHome() {
           title="About Panther Transit" 
           onPress={() => {}}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <SettingsItem 
           icon="help-circle-outline" 
           title="Help & Support" 
           onPress={() => {}}
         />
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <SettingsItem 
           icon="document-text-outline" 
           title="Privacy Policy" 
@@ -214,7 +216,7 @@ export default function SettingsHome() {
       </SettingsSection>
       
       <View style={styles.versionContainer}>
-        <Text style={[styles.versionText, isDarkMode && styles.darkVersionText]}>
+        <Text style={[styles.versionText, { color: colors.textMuted }]}>
           Panther Transit v1.0.0
         </Text>
       </View>
@@ -225,10 +227,6 @@ export default function SettingsHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  darkBackground: {
-    backgroundColor: '#121212',
   },
   contentContainer: {
     paddingBottom: 40,
@@ -241,10 +239,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#0039A6',
-  },
-  darkText: {
-    color: '#FFFFFF',
   },
   section: {
     marginBottom: 24,
@@ -254,16 +248,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#0039A6',
     paddingLeft: 8,
   },
   sectionContent: {
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-  },
-  darkSectionContent: {
-    backgroundColor: 'rgba(50, 50, 50, 0.5)',
   },
   settingsItem: {
     flexDirection: 'row',
@@ -280,30 +269,20 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: 'rgba(0, 57, 166, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
-  darkIconContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
   settingsItemTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
   },
   divider: {
     height: 0.5,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     marginHorizontal: 16,
   },
   settingValue: {
     fontSize: 16,
-    color: '#888',
-  },
-  darkSettingValue: {
-    color: '#aaa',
   },
   themeOptions: {
     paddingVertical: 8,
@@ -315,16 +294,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginVertical: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.03)',
-  },
-  darkRadioOption: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  radioSelected: {
-    backgroundColor: 'rgba(0, 57, 166, 0.1)',
-  },
-  darkRadioSelected: {
-    backgroundColor: 'rgba(0, 57, 166, 0.2)',
   },
   radioIconContainer: {
     marginRight: 16,
@@ -333,35 +302,19 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
-  },
-  radioLabelSelected: {
-    color: '#0039A6',
-    fontWeight: '600',
   },
   radioButton: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  darkRadioButton: {
-    borderColor: '#555',
-  },
-  radioButtonSelected: {
-    borderColor: '#0039A6',
-  },
-  darkRadioButtonSelected: {
-    borderColor: '#0039A6',
   },
   radioButtonInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#0039A6',
   },
   versionContainer: {
     alignItems: 'center',
@@ -370,9 +323,5 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 14,
-    color: '#888',
-  },
-  darkVersionText: {
-    color: '#666',
   },
 });
