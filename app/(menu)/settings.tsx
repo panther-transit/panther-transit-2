@@ -160,7 +160,7 @@ export default function SettingsHome() {
         <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
       </View>
       
-      {/* Account Section - Moved to top */}
+      {/* Account Section */}
       <SettingsSection title="Account">
         <SettingsItem 
           icon="person-outline" 
@@ -175,7 +175,7 @@ export default function SettingsHome() {
         />
       </SettingsSection>
       
-      {/* Appearance Section - Moved below account */}
+      {/* Appearance Section */}
       <SettingsSection title="Appearance">
         <View style={styles.themeOptions}>
           <ThemeRadioButton 
@@ -198,8 +198,6 @@ export default function SettingsHome() {
           />
         </View>
       </SettingsSection>
-      
-      {/* App Settings Section removed as requested */}
       
       {/* About Section */}
       <SettingsSection title="About">

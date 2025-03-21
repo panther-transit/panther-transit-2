@@ -24,7 +24,7 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: isDarkMode ? {
           backgroundColor: colors.tabBackground,
-          borderTopColor: colors.border,
+          borderTopColor: 'rgba(50, 50, 50, 0.5)', // Subtle border
         } : Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect

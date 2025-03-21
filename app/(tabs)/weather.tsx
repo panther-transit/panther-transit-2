@@ -4,6 +4,7 @@ import { ThemedText as Text } from '@/components/ThemedText';
 import { api } from '@/app/utils/api';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 type WeatherData = {
   hourly: {
@@ -90,18 +91,20 @@ export default function Weather() {
     fetchData();
   }, []);
 
+  const { isDarkMode, colors } = useAppTheme();
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!weather) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Failed to load weather data</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.text }]}>Failed to load weather data</Text>
       </View>
     );
   }
@@ -114,43 +117,45 @@ export default function Weather() {
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.contentContainer}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0039A6" />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
       <View style={styles.compactHeader}>
-        <View style={styles.currentTempContainer}>
+        <View style={[styles.currentTempContainer, { 
+          backgroundColor: isDarkMode ? colors.cardHighlight : GSU_BLUE_LIGHT 
+        }]}>
           <FontAwesome 
             name={getWeatherIcon(currentWeatherCode)} 
             size={40} 
-            color="#0039A6" 
+            color={colors.primary} 
             style={styles.weatherIcon}
           />
           <View style={styles.tempInfo}>
-            <Text style={styles.temperature}>{Math.round(currentTemp)}°F</Text>
-            <Text style={styles.feelsLike}>Feels like {Math.round(currentFeelsLike)}°F</Text>
+            <Text style={[styles.temperature, { color: colors.text }]}>Current Temp: {Math.round(currentTemp)}°F</Text>
+            <Text style={[styles.feelsLike, { color: colors.textMuted }]}>Feels like {Math.round(currentFeelsLike)}°F</Text>
           </View>
         </View>
         
         {/* Sunrise/Sunset Info - Enhanced */}
         <View style={styles.sunTimesContainer}>
-          <View style={styles.sunTimeItem}>
-            <View style={styles.sunIconCircle}>
+          <View style={[styles.sunTimeItem, { backgroundColor: colors.card }]}>
+            <View style={[styles.sunIconCircle, { backgroundColor: isDarkMode ? 'rgba(255, 149, 0, 0.15)' : '#FFF8E1' }]}>
               <FontAwesome name="arrow-up" size={18} color="#FF9500" />
             </View>
-            <Text style={styles.sunTimeLabel}>Sunrise</Text>
-            <Text style={styles.sunTimeValue}>
+            <Text style={[styles.sunTimeLabel, { color: colors.textMuted }]}>Sunrise</Text>
+            <Text style={[styles.sunTimeValue, { color: colors.text }]}>
               {new Date(weather.daily.sunrise[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </Text>
           </View>
-          <View style={styles.sunTimeItem}>
-            <View style={styles.sunIconCircle}>
+          <View style={[styles.sunTimeItem, { backgroundColor: colors.card }]}>
+            <View style={[styles.sunIconCircle, { backgroundColor: isDarkMode ? 'rgba(255, 59, 48, 0.15)' : '#FFF8E1' }]}>
               <FontAwesome name="arrow-down" size={18} color="#FF3B30" />
             </View>
-            <Text style={styles.sunTimeLabel}>Sunset</Text>
-            <Text style={styles.sunTimeValue}>
+            <Text style={[styles.sunTimeLabel, { color: colors.textMuted }]}>Sunset</Text>
+            <Text style={[styles.sunTimeValue, { color: colors.text }]}>
               {new Date(weather.daily.sunset[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </Text>
           </View>
@@ -159,20 +164,20 @@ export default function Weather() {
 
       {/* 7-Day Forecast - Moved up */}
       <View style={styles.forecastContainer}>
-        <Text style={styles.sectionTitle}>7-Day Forecast</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>7-Day Forecast</Text>
         
         <View style={styles.forecastLegend}>
-          <Text style={styles.legendDay}>Day</Text>
-          <Text style={styles.legendWeather}>Weather</Text>
+          <Text style={[styles.legendDay, { color: colors.textMuted }]}>Day</Text>
+          <Text style={[styles.legendWeather, { color: colors.textMuted }]}>Weather</Text>
           <View style={styles.legendTemp}>
-            <Text style={styles.legendLabel}>High/Low</Text>
+            <Text style={[styles.legendLabel, { color: colors.textMuted }]}>High/Low</Text>
           </View>
           <View style={styles.legendPrecip}>
-            <Text style={styles.legendLabel}>Rain</Text>
+            <Text style={[styles.legendLabel, { color: colors.textMuted }]}>Rain</Text>
           </View>
         </View>
         
-        <View style={styles.forecastWrapper}>
+        <View style={[styles.forecastWrapper, { backgroundColor: colors.card }]}>
           {/* Skip the first day (index 0) from the API and start from the second day (index 1) */}
           {weather.daily.time.slice(1).map((day, index) => {
             // Only show first 3 days if showAllDays is false
@@ -181,13 +186,21 @@ export default function Weather() {
             // Adjust the actual API data index (add 1 since we're skipping the first day)
             const dataIndex = index + 1;
             return (
-              <View key={day} style={[styles.forecastDay, index === 0 && styles.todayForecast]}>
+              <View key={day} style={[
+                styles.forecastDay, 
+                index === 0 && [styles.todayForecast, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }],
+                { borderBottomColor: isDarkMode ? colors.border : '#f0f0f0' }
+              ]}>
                 <View style={styles.dayContainer}>
-                  <Text style={[styles.dayText, index === 0 && styles.todayText]}>
+                  <Text style={[
+                    styles.dayText, 
+                    { color: colors.text },
+                    index === 0 && [styles.todayText, { color: colors.primary }]
+                  ]}>
                     {index === 0 ? 'Today' : new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}
                   </Text>
                   {index === 0 && (
-                    <Text style={styles.dateText}>
+                    <Text style={[styles.dateText, { color: colors.textMuted }]}>
                       {currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </Text>
                   )}
@@ -197,26 +210,37 @@ export default function Weather() {
                   <FontAwesome 
                     name={getWeatherIcon(weather.daily.weather_code[dataIndex])} 
                     size={28} 
-                    color={index === 0 ? "#0039A6" : "#555"} 
+                    color={index === 0 ? colors.primary : isDarkMode ? colors.textSecondary : "#555"} 
                     style={styles.forecastIcon}
                   />
                 </View>
                 
                 <View style={styles.tempRange}>
-                  <Text style={[styles.tempText, index === 0 && styles.todayTemp]}>
+                  <Text style={[
+                    styles.tempText, 
+                    { color: isDarkMode ? colors.text : '#333' },
+                    index === 0 && styles.todayTemp
+                  ]}>
                     {Math.round(weather.daily.temperature_2m_max[dataIndex])}°
                   </Text>
-                  <Text style={styles.tempDivider}>/</Text>
-                  <Text style={styles.tempTextMin}>
+                  <Text style={[styles.tempDivider, { color: isDarkMode ? colors.textMuted : '#999' }]}>/</Text>
+                  <Text style={[styles.tempTextMin, { color: isDarkMode ? colors.textMuted : '#666' }]}>
                     {Math.round(weather.daily.temperature_2m_min[dataIndex])}°
                   </Text>
                 </View>
                 
                 <View style={styles.precipContainer}>
-                  <View style={styles.precipIconContainer}>
-                    <View style={[styles.precipBar, {height: `${Math.min(Math.round(weather.daily.precipitation_probability_max[dataIndex]), 100)}%`}]} />
+                  <View style={[styles.precipIconContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#f0f0f0' }]}>
+                    <View style={[styles.precipBar, {
+                      height: `${Math.min(Math.round(weather.daily.precipitation_probability_max[dataIndex]), 100)}%`,
+                      backgroundColor: colors.primary
+                    }]} />
                   </View>
-                  <Text style={[styles.precipText, index === 0 && styles.todayPrecip]}>
+                  <Text style={[
+                    styles.precipText, 
+                    { color: isDarkMode ? colors.textMuted : '#666' },
+                    index === 0 && [styles.todayPrecip, { color: colors.primary }]
+                  ]}>
                     {Math.round(weather.daily.precipitation_probability_max[dataIndex])}%
                   </Text>
                 </View>
@@ -226,16 +250,19 @@ export default function Weather() {
           
           {/* Show More / Show Less button */}
           <TouchableOpacity 
-            style={styles.showMoreButton} 
+            style={[styles.showMoreButton, {
+              borderTopColor: isDarkMode ? colors.border : '#f0f0f0',
+              backgroundColor: isDarkMode ? colors.surfaceHighlight : 'transparent'
+            }]} 
             onPress={() => setShowAllDays(!showAllDays)}
           >
-            <Text style={styles.showMoreText}>
+            <Text style={[styles.showMoreText, { color: colors.primary }]}>
               {showAllDays ? 'Show Less' : 'Show More'}
             </Text>
             <FontAwesome 
               name={showAllDays ? 'chevron-up' : 'chevron-down'} 
               size={16} 
-              color={GSU_BLUE} 
+              color={colors.primary} 
               style={styles.showMoreIcon}
             />
           </TouchableOpacity>
@@ -243,48 +270,48 @@ export default function Weather() {
       </View>
       
       {/* Current Conditions Details - Moved down */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.sectionTitle}>Current Conditions</Text>
+      <View style={[styles.detailsContainer, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>Current Conditions</Text>
         <View style={styles.detailsGrid}>
-          <View style={styles.detailItem}>
-            <FontAwesome name="tint" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Humidity</Text>
-            <Text style={styles.detailValue}>{weather.hourly.relative_humidity_2m[currentHourIndex]}%</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="tint" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Humidity</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{weather.hourly.relative_humidity_2m[currentHourIndex]}%</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="umbrella" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Precipitation</Text>
-            <Text style={styles.detailValue}>{weather.hourly.precipitation_probability[currentHourIndex]}%</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="umbrella" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Precipitation</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{weather.hourly.precipitation_probability[currentHourIndex]}%</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="arrows" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Wind</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.hourly.wind_speed_10m[currentHourIndex])} mph</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="arrows" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Wind</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{Math.round(weather.hourly.wind_speed_10m[currentHourIndex])} mph</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="sun-o" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>UV Index</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.daily.uv_index_max[0])}</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="sun-o" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>UV Index</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{Math.round(weather.daily.uv_index_max[0])}</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="cloud" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Cloud Cover</Text>
-            <Text style={styles.detailValue}>{weather.hourly.cloud_cover[currentHourIndex]}%</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="cloud" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Cloud Cover</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{weather.hourly.cloud_cover[currentHourIndex]}%</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="eye" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Visibility</Text>
-            <Text style={styles.detailValue}>{(weather.hourly.visibility[currentHourIndex] / 1609).toFixed(1)} mi</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="eye" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Visibility</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{(weather.hourly.visibility[currentHourIndex] / 1609).toFixed(1)} mi</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="arrow-down" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Pressure</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.hourly.pressure_msl[currentHourIndex] / 33.864)} inHg</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="arrow-down" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Pressure</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{Math.round(weather.hourly.pressure_msl[currentHourIndex] / 33.864)} inHg</Text>
           </View>
-          <View style={styles.detailItem}>
-            <FontAwesome name="clock-o" size={20} color="#0039A6" />
-            <Text style={styles.detailLabel}>Dew Point</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.hourly.dew_point_2m[currentHourIndex])}°F</Text>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="clock-o" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Dew Point</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{Math.round(weather.hourly.dew_point_2m[currentHourIndex])}°F</Text>
           </View>
         </View>
       </View>
@@ -298,7 +325,6 @@ const GSU_BLUE_LIGHT = '#E6F3FF';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   contentContainer: {
     paddingTop: 60,
@@ -357,7 +383,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   forecastWrapper: {
-    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 15,
     shadowColor: '#000',
@@ -518,7 +543,6 @@ const styles = StyleSheet.create({
   detailsContainer: {
     marginHorizontal: 20,
     marginBottom: 20,
-    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 15,
     shadowColor: '#000',
@@ -537,7 +561,6 @@ const styles = StyleSheet.create({
     width: '48%',
     padding: 12,
     marginBottom: 12,
-    backgroundColor: GSU_BLUE_LIGHT,
     borderRadius: 10,
     alignItems: 'center',
   },
@@ -564,7 +587,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
-    backgroundColor: GSU_BLUE_LIGHT,
     borderRadius: 12,
     padding: 8,
     paddingHorizontal: 12,
@@ -582,7 +604,6 @@ const styles = StyleSheet.create({
   },
   sunTimeItem: {
     width: '48%',
-    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 15,
     alignItems: 'center',

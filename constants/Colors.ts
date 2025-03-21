@@ -28,6 +28,7 @@ const darkBackground = '#121212';
 const darkSurface = '#1E1E1E';
 const darkSurfaceHighlight = '#2D2D2D';
 const darkBorder = '#333333';
+const darkTabBackground = '#000000'; // Pure black for tab bar
 
 // For interactive elements like buttons
 const success = '#28A745';
@@ -127,10 +128,10 @@ export const Colors = {
     info: infoDark,
     
     // Tab navigation
-    tabBackground: darkSurface,
-    tabIconDefault: gray400,
-    tabIconSelected: pantherBlueLight,
-    tint: pantherBlueLight,
+    tabBackground: darkTabBackground,
+    tabIconDefault: '#888888', // Medium gray for unselected icons
+    tabIconSelected: '#4DA6FF', // Bright blue for selected icons
+    tint: '#4DA6FF', // Matching tint color
     
     // Specific UI elements
     divider: darkBorder,
