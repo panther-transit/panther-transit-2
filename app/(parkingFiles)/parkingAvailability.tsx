@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function ParkingAvailability() {
   const { deck } = useLocalSearchParams();
   const [spots, setSpots] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDarkMode, colors } = useAppTheme();
 
   useEffect(() => {
     const fetchParkingData = async () => {
@@ -33,13 +35,21 @@ export default function ParkingAvailability() {
   
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Parking Availability</Text>
-      <Text style={styles.subtitle}>Selected Deck: {deck}</Text>
+    <View style={[styles.container, {
+      backgroundColor: isDarkMode ? colors.background : '#E8F4FD'
+    }]}>
+      <Text style={[styles.heading, {
+        color: colors.primary
+      }]}>Parking Availability</Text>
+      <Text style={[styles.subtitle, {
+        color: isDarkMode ? colors.textMuted : '#666'
+      }]}>Selected Deck: {deck}</Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#0039A6" />
+        <ActivityIndicator size="large" color={colors.primary} />
       ) : (
-        <Text style={styles.subtitle}>Available Spots: {spots}</Text>
+        <Text style={[styles.subtitle, {
+          color: isDarkMode ? colors.textMuted : '#666'
+        }]}>Available Spots: {spots}</Text>
       )}
     </View>
   );

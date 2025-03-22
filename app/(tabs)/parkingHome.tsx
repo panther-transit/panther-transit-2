@@ -2,9 +2,11 @@ import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function ParkingHome() {
   const [selectedDeck, setSelectedDeck] = useState('');
+  const { isDarkMode, colors } = useAppTheme();
 
   const handleCheckPress = () => {
     if (selectedDeck) {
@@ -13,14 +15,24 @@ export default function ParkingHome() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {
+      backgroundColor: isDarkMode ? colors.background : '#E8F4FD'
+    }]}>
       <Image source={require('../../assets/images/gsu.png')} style={styles.logo} />
-      <Text style={styles.heading}>Looking for parking?</Text>
-      <Text style={styles.subtitle}>Select a parking deck</Text>
+      <Text style={[styles.heading, {
+        color: colors.primary
+      }]}>Looking for parking?</Text>
+      <Text style={[styles.subtitle, {
+        color: isDarkMode ? colors.textMuted : '#666'
+      }]}>Select a parking deck</Text>
       <Picker
         selectedValue={selectedDeck}
         onValueChange={(itemValue) => setSelectedDeck(itemValue)}
-        style={styles.picker}
+        style={[styles.picker, {
+          color: isDarkMode ? '#FFFFFF' : undefined,
+          backgroundColor: isDarkMode ? colors.card : undefined
+        }]}
+        dropdownIconColor={isDarkMode ? colors.textMuted : undefined}
       >
         <Picker.Item label=" " value="" />
         <Picker.Item label="CC Deck" value="CC" />
@@ -31,7 +43,9 @@ export default function ParkingHome() {
         <Picker.Item label="T Deck" value="T" />
       </Picker>
       <Pressable 
-        style={[styles.button, !selectedDeck && styles.buttonDisabled]} 
+        style={[styles.button, 
+          { backgroundColor: selectedDeck ? colors.primary : (isDarkMode ? '#444' : '#ccc') }
+        ]} 
         disabled={!selectedDeck}
         onPress={handleCheckPress}
       >

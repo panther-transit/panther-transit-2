@@ -3,16 +3,25 @@ import { router } from 'expo-router';
 import BusMap from '@/components/martaBusMap';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export default function MartaHome() {
+  const { isDarkMode, colors } = useAppTheme();
+  
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, {
+      backgroundColor: isDarkMode ? colors.background : '#F8F9FA'
+    }]}>
+      <View style={[styles.header, {
+        backgroundColor: colors.primary
+      }]}>
         <Text style={styles.welcome}>Welcome to MARTA</Text>
-        <Text style={styles.subtitle}>Real-time bus tracking at your fingertips</Text>
+        <Text style={[styles.subtitle, {
+          color: isDarkMode ? colors.textSecondary : '#f8f8f8'
+        }]}>Real-time bus tracking at your fingertips</Text>
       </View>
       <View style={styles.mapContainer}>
-        <BusMap />
+        <BusMap isDarkMode={isDarkMode} />
       </View>
     </SafeAreaView>
   );
