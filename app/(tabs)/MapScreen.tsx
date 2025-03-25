@@ -147,7 +147,7 @@ const DirectionsMap = () => {
         style={styles.map}
         showsUserLocation={true}
         showsTraffic={true}
-        provider="google"
+        //provider= default
         initialRegion={{
           latitude: userLocation?.latitude || 33.753746,
           longitude: userLocation?.longitude || -84.386330,
