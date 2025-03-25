@@ -41,7 +41,7 @@ export default function Index() {
       <View style={styles.buttonContainer}>
         <Pressable 
           style={({pressed}) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={() => router.push('/(auth)/login')}
+          onPress={() => router.push('/(tabs)')}
         >
           <Text style={styles.buttonText}>Log in</Text>
         </Pressable>
