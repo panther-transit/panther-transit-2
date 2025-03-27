@@ -65,7 +65,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="MapScreen"
         options={{  
-          title: 'Google Map',
+          title: 'Traffic',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="car.fill" color={color} />,
         }}
       />
