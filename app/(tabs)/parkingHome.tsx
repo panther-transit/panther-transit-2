@@ -29,8 +29,8 @@ export default function ParkingHome() {
         selectedValue={selectedDeck}
         onValueChange={(itemValue) => setSelectedDeck(itemValue)}
         style={[styles.picker, {
-          color: isDarkMode ? '#FFFFFF' : undefined,
-          backgroundColor: isDarkMode ? colors.card : undefined
+          color: isDarkMode ? '#FFFFFF' : '#000',
+          backgroundColor: 'transparent'
         }]}
         itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000' }}
         dropdownIconColor={isDarkMode ? colors.textMuted : undefined}
