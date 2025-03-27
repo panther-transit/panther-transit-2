@@ -204,6 +204,7 @@ export default function HomeScreen() {
               <View style={[styles.contentCard, { 
                 backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.85)' 
               }]}>
+                <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• In case of emergency, CALL 911</Text>
                 <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• GSU Police Department: (404) 413-3333</Text>
                 <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• GSU Emergency: (404) 413-2100</Text>
                 <Text style={[styles.subtitle, { color: isDarkMode ? colors.text : '#444' }]}>• MARTA Customer Service: (404) 848-5000</Text>

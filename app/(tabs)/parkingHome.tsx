@@ -23,15 +23,16 @@ export default function ParkingHome() {
         color: colors.primary
       }]}>Looking for parking?</Text>
       <Text style={[styles.subtitle, {
-        color: isDarkMode ? colors.textMuted : '#666'
+        color: isDarkMode ? colors.textMuted : '#444'
       }]}>Select a parking deck</Text>
       <Picker
         selectedValue={selectedDeck}
         onValueChange={(itemValue) => setSelectedDeck(itemValue)}
         style={[styles.picker, {
-          color: isDarkMode ? '#FFFFFF' : undefined,
-          backgroundColor: isDarkMode ? colors.card : undefined
+          color: isDarkMode ? '#FFFFFF' : '#000',
+          backgroundColor: 'transparent'
         }]}
+        itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000' }}
         dropdownIconColor={isDarkMode ? colors.textMuted : undefined}
       >
         <Picker.Item label=" " value="" />

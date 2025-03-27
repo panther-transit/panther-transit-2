@@ -45,12 +45,17 @@ export default function ParkingAvailability() {
         color: isDarkMode ? colors.textMuted : '#666'
       }]}>Selected Deck: {deck}</Text>
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
-      ) : (
-        <Text style={[styles.subtitle, {
-          color: isDarkMode ? colors.textMuted : '#666'
-        }]}>Available Spots: {spots}</Text>
-      )}
+  <ActivityIndicator size="large" color={colors.primary} />
+  ) : (
+    <View style={styles.spotsContainer}>
+      <Text style={[styles.subtitle, {
+        color: isDarkMode ? colors.textMuted : '#666'
+      }]}>
+        Available Spots:
+      </Text>
+      <Text style={styles.spotsText}>{spots}</Text>
+    </View>
+  )}
     </View>
   );
 }
@@ -77,4 +82,15 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign: 'center',
   },
+  spotsContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  spotsText: {
+    fontSize: 32,
+    fontFamily: 'Montserrat-Bold',
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 5,
+  },  
 });
