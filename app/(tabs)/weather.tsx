@@ -50,6 +50,25 @@ type WeatherData = {
   };
 };
 
+type AirQualityData = {
+  hourly: {
+    time: string[];
+    pm10: number[];
+    pm2_5: number[];
+    carbon_monoxide: number[];
+    nitrogen_dioxide: number[];
+    ozone: number[];
+    european_aqi: number[];
+    us_aqi: number[];
+    grass_pollen: number[];
+    birch_pollen: number[];
+    ragweed_pollen: number[];
+  };
+  hourly_units?: {
+    [key: string]: string;
+  };
+};
+
 const getWeatherIcon = (code: number) => {
   // WMO Weather interpretation codes: https://open-meteo.com/en/docs
   if (code === 0) return 'sun-o';
@@ -65,6 +84,7 @@ const getWeatherIcon = (code: number) => {
 
 export default function Weather() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [airQuality, setAirQuality] = useState<AirQualityData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentDate] = useState(new Date());
@@ -72,10 +92,16 @@ export default function Weather() {
 
   const fetchData = async () => {
     try {
-      const weatherData = await api.weather.getGSUWeather();
+      // Fetch both weather and air quality data in parallel
+      const [weatherData, airQualityData] = await Promise.all([
+        api.weather.getGSUWeather(),
+        api.weather.getGSUAirQuality()
+      ]);
       setWeather(weatherData);
+      setAirQuality(airQualityData);
     } catch (error) {
-      console.error('Error fetching weather data:', error);
+      console.error('Error fetching data:', error);
+      // Optionally set an error state here to display a message
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -101,10 +127,10 @@ export default function Weather() {
     );
   }
 
-  if (!weather) {
+  if (!weather || !airQuality) { // Check for both weather and airQuality
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.text }]}>Failed to load weather data</Text>
+        <Text style={[styles.errorText, { color: colors.text }]}>Failed to load weather or air quality data</Text>
       </View>
     );
   }
@@ -114,6 +140,20 @@ export default function Weather() {
   const currentTemp = weather.hourly.temperature_2m[currentHourIndex];
   const currentFeelsLike = weather.hourly.apparent_temperature[currentHourIndex];
   const currentWeatherCode = weather.hourly.weather_code[currentHourIndex];
+  // Get current pollen data
+  const currentGrassPollen = airQuality.hourly.grass_pollen?.[currentHourIndex];
+  const currentBirchPollen = airQuality.hourly.birch_pollen?.[currentHourIndex];
+  const currentRagweedPollen = airQuality.hourly.ragweed_pollen?.[currentHourIndex];
+
+  // Helper function to format pollen levels
+  const formatPollenLevel = (value: number | undefined): string => {
+    if (value === undefined || value === null) return 'N/A';
+    // Example interpretation: Adjust thresholds as needed based on API docs or standards
+    if (value < 5) return 'Low';
+    if (value < 20) return 'Moderate';
+    if (value < 50) return 'High';
+    return 'Very High'; 
+  };
 
   return (
     <ScrollView 
@@ -315,6 +355,30 @@ export default function Weather() {
           </View>
         </View>
       </View>
+
+      {/* Air Quality (Pollen) Section */}
+      <View style={[styles.detailsContainer, { backgroundColor: colors.card }]}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>Air Quality - Pollen</Text>
+        <View style={styles.detailsGrid}>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="leaf" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Grass Pollen</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{formatPollenLevel(currentGrassPollen)}</Text>
+          </View>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            <FontAwesome name="tree" size={20} color={colors.primary} />
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Birch Pollen</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{formatPollenLevel(currentBirchPollen)}</Text>
+          </View>
+          <View style={[styles.detailItem, { backgroundColor: isDarkMode ? colors.surfaceHighlight : GSU_BLUE_LIGHT }]}>
+            {/* Using a generic icon for Ragweed, adjust if a better one is available */}
+            <FontAwesome name="pagelines" size={20} color={colors.primary} /> 
+            <Text style={[styles.detailLabel, { color: isDarkMode ? colors.textMuted : '#666' }]}>Ragweed Pollen</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{formatPollenLevel(currentRagweedPollen)}</Text>
+          </View>
+        </View>
+      </View>
+
     </ScrollView>
   );     
 }

@@ -1,7 +1,9 @@
 const API_URL = 'http://localhost:3000/api';
 
 // Open-Meteo API for weather data
-const OPEN_METEO_API_URL = 'https://api.open-meteo.com/v1';
+const OPEN_METEO_WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
+// Open-Meteo API for air quality data
+const OPEN_METEO_AIR_QUALITY_API_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
 // Georgia State University coordinates
 const GSU_LATITUDE = 33.75278;
@@ -49,7 +51,7 @@ export const api = {
     getGSUWeather: async () => {
       try {
         const response = await fetch(
-          `${OPEN_METEO_API_URL}/forecast?latitude=${GSU_LATITUDE}&longitude=${GSU_LONGITUDE}&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,visibility,cloud_cover,pressure_msl,dew_point_2m,soil_temperature_0cm,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,sunshine_duration&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&forecast_days=7`
+          `${OPEN_METEO_WEATHER_API_URL}?latitude=${GSU_LATITUDE}&longitude=${GSU_LONGITUDE}&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,visibility,cloud_cover,pressure_msl,dew_point_2m,soil_temperature_0cm,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,sunshine_duration&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&forecast_days=7`
         );
         
         if (!response.ok) {
@@ -63,15 +65,17 @@ export const api = {
       }
     },
     
-    // Get air quality data for Georgia State University
+    // Get air quality data (including pollen) for Georgia State University
     getGSUAirQuality: async () => {
       try {
         const response = await fetch(
-          `${OPEN_METEO_API_URL}/air-quality?latitude=${GSU_LATITUDE}&longitude=${GSU_LONGITUDE}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,european_aqi,us_aqi&timezone=America%2FNew_York`
+          `${OPEN_METEO_AIR_QUALITY_API_URL}?latitude=${GSU_LATITUDE}&longitude=${GSU_LONGITUDE}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,european_aqi,us_aqi,grass_pollen,birch_pollen,ragweed_pollen&timezone=America%2FNew_York`
         );
         
         if (!response.ok) {
-          throw new Error('Failed to fetch GSU air quality data');
+          const errorBody = await response.text(); // Try to get error body
+          console.error(`Air Quality API Error: Status ${response.status} - ${response.statusText}`, errorBody);
+          throw new Error(`Failed to fetch GSU air quality data (Status: ${response.status})`);
         }
         
         return response.json();
