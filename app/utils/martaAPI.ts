@@ -15,27 +15,36 @@ const REFRESH_TOKEN = 'AMf-vBzacP-8jBZeFsWwz2rUXayBlrV9m4zSjE1hFo1n9F4rCIXVen-di
 const MARTA_FEED_ID = 'mdb-1601'; // MARTA's feed ID from Mobility Database
 
 // Store the access token and its expiration
-let accessToken = ''; // Initialize as empty string instead of null
-let tokenExpiration: number = 0; // Unix timestamp in milliseconds
+let accessToken: string | null = null;
+let tokenExpiration: number | null = null;
+
+// Map to store route IDs and their assigned random numbers
+const routeIdToRandomNumberMap = new Map<string, number>();
+
+// Function to generate a random integer (adjust range as needed)
+const generateRandomNumber = (): number => {
+  // Generate a random integer between 1 and 900
+  return Math.floor(Math.random() * 900) + 1;
+};
 
 // Function to get a valid access token
 const getAccessToken = async (): Promise<string> => {
   const currentTime = Date.now();
   
   // If we have a valid token, return it
-  if (accessToken && tokenExpiration > currentTime) {
+  if (accessToken && tokenExpiration && tokenExpiration > currentTime) {
     return accessToken;
   }
   
   // Otherwise, get a new token
   try {
-    const response = await fetch(MOBILITY_DB_TOKEN_URL, {
+    const response = await fetch(MOBILITY_DB_TOKEN_URL!, {
       method: 'POST',
       headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${Buffer.from(`${process.env.CLIENT_ID!}:${process.env.CLIENT_SECRET!}`).toString('base64')}`
       },
-      body: JSON.stringify({ refresh_token: REFRESH_TOKEN }),
+      body: 'grant_type=client_credentials'
     });
     
     if (!response.ok) {
@@ -55,13 +64,12 @@ const getAccessToken = async (): Promise<string> => {
     // Subtract 5 minutes (300 seconds) to be safe
     tokenExpiration = currentTime + ((data.expires_in || 3600) - 300) * 1000;
     
-    return accessToken;
+    return accessToken!;
   } catch (error) {
     console.error('Error getting access token:', error);
     throw error;
   }
 };
-
 
 export const fetchMartaBusData = async (): Promise<BusPosition[]> => {
   try {
@@ -76,28 +84,35 @@ export const fetchMartaBusData = async (): Promise<BusPosition[]> => {
     const feed = gtfs.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
 
     const buses: BusPosition[] = feed.entity
-      .filter(entity => entity.vehicle && entity.vehicle.position)
-      .map(entity => ({
-        id: entity.id || 'Unknown',
-        latitude: entity.vehicle?.position?.latitude ?? 0,
-        longitude: entity.vehicle?.position?.longitude ?? 0,
-        route: entity.vehicle?.trip?.routeId || 'Unknown',
-      }));
+      .filter(entity => entity.vehicle && entity.vehicle.position && entity.vehicle.trip?.routeId) // Ensure routeId exists
+      .map(entity => {
+        const routeId = entity.vehicle!.trip!.routeId!; // Assert non-null based on filter
+
+        // Check if routeId is already in the map, if not, add it with a random number
+        if (!routeIdToRandomNumberMap.has(routeId)) {
+          const randomNumber = generateRandomNumber();
+          routeIdToRandomNumberMap.set(routeId, randomNumber);
+          console.log(`Assigned random number ${randomNumber} to route ${routeId}`); // Optional logging
+        }
+
+        return {
+          id: entity.id || 'Unknown',
+          latitude: entity.vehicle!.position!.latitude ?? 0,
+          longitude: entity.vehicle!.position!.longitude ?? 0,
+          route: routeId,
+        };
+      });
 
     return buses;
   } catch (error) {
-    console.error('Error fetching GTFS data:', error);
-
-    // Return sample data as fallback
-    console.log('Returning sample data as fallback');
-    return [
-      { id: 'bus1', latitude: 33.749, longitude: -84.388, route: '110' },
-      { id: 'bus2', latitude: 33.759, longitude: -84.378, route: '120' },
-      { id: 'bus3', latitude: 33.739, longitude: -84.398, route: '130' },
-      { id: 'bus4', latitude: 33.760, longitude: -84.390, route: '140' },
-      { id: 'bus5', latitude: 33.745, longitude: -84.385, route: '150' }
-    ];
+    console.error('Error fetching MARTA bus data:', error);
+    return []; // Return empty array on error to prevent crashes downstream
   }
+};
+
+// Function to get the current state of the route ID map
+export const getRouteIdMap = (): Map<string, number> => {
+  return routeIdToRandomNumberMap;
 };
 
 export const testMartaApiConnection = async (): Promise<void> => {

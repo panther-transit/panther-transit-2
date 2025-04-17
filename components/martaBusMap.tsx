@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import MapView, { Marker, MapStyleElement } from 'react-native-maps';
-import { fetchMartaBusData, BusPosition } from '../app/utils/martaAPI';
+import MapView, { Marker, MapStyleElement, Callout } from 'react-native-maps';
+import { fetchMartaBusData, getRouteIdMap, BusPosition } from '../app/utils/martaAPI';
 
 interface BusMapProps {
   isDarkMode?: boolean;
@@ -11,6 +11,7 @@ const BusMap: React.FC<BusMapProps> = ({ isDarkMode = false }) => {
   const [buses, setBuses] = useState<BusPosition[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [routeIdMap, setRouteIdMap] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const loadBuses = async () => {
@@ -19,6 +20,11 @@ const BusMap: React.FC<BusMapProps> = ({ isDarkMode = false }) => {
         const busData = await fetchMartaBusData(); 
         setBuses(busData);
         setError(null);
+
+        // Fetch the route ID map *after* fetching bus data
+        const currentMap = getRouteIdMap(); 
+        setRouteIdMap(currentMap); 
+        console.log("Updated Route ID Map:", currentMap);
       } catch (err) {
         setError('Failed to load bus data');
         console.error('Error loading bus data:', err);
@@ -27,8 +33,8 @@ const BusMap: React.FC<BusMapProps> = ({ isDarkMode = false }) => {
       }
     };
 
-    loadBuses(); // Fetch on mount
-    const interval = setInterval(loadBuses, 15000); // Refresh every 15 seconds
+    loadBuses(); 
+    const interval = setInterval(loadBuses, 15000); 
 
     return () => clearInterval(interval);
   }, []);
@@ -154,18 +160,36 @@ const BusMap: React.FC<BusMapProps> = ({ isDarkMode = false }) => {
           longitudeDelta: 0.1,
         }}
       >
-        {buses.map((bus) => (
-          <Marker
-            key={bus.id}
-            coordinate={{
-              latitude: bus.latitude,
-              longitude: bus.longitude
-            }}
-            title={`Route ${bus.route}`}
-            description={`Bus ID: ${bus.id}`}
-            pinColor="#0039A6" // MARTA blue color
-          />
-        ))}
+        {buses.map((bus) => {
+          const assignedNumber = routeIdMap.get(bus.route);
+          const displayRoute = assignedNumber !== undefined ? `Route ${assignedNumber}` : `Route ${bus.route}`;
+
+          return (
+            <Marker
+              key={bus.id}
+              coordinate={{
+                latitude: bus.latitude,
+                longitude: bus.longitude
+              }}
+              title={displayRoute}
+              description={`Bus ID: ${bus.id}`}
+              pinColor="#0039A6"
+            >
+              <Callout tooltip>
+                <View style={[styles.calloutView, {
+                  backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)'
+                }]}>
+                  <Text style={[styles.calloutTitle, {
+                    color: isDarkMode ? '#4DA6FF' : '#0039A6'
+                  }]}>{displayRoute}</Text>
+                  <Text style={[styles.calloutDescription, {
+                    color: isDarkMode ? '#4DA6FF' : '#0039A6'
+                  }]}>{`Bus ID: ${bus.id}`}</Text>
+                </View>
+              </Callout>
+            </Marker>
+          );
+        })}
       </MapView>
       
       {loading && !buses.length && (
@@ -212,6 +236,22 @@ const styles = StyleSheet.create({
   overlayText: {
     fontFamily: 'Montserrat-SemiBold',
     color: '#0039A6',
+  },
+  calloutView: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  calloutTitle: {
+    fontFamily: 'Montserrat-SemiBold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  calloutDescription: {
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 14,
   }
 });
 
